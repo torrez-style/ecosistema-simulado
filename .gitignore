@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+
+# Entornos virtuales
+.venv/
+venv/
+
+# Editores y sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Partidas guardadas (la carpeta se conserva con .gitkeep)
+guardados/*.json
