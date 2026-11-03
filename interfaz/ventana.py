@@ -4,12 +4,36 @@ Fase 7 — Interfaz gráfica con pygame.
 Controles mínimos que pide la guía: iniciar, pausar y ajustar la velocidad.
 """
 
-# Paleta inicial (negros y rojos); ajústenla a su estilo pixel art.
-COLOR_FONDO = (10, 10, 12)
-COLOR_CUADRICULA = (40, 12, 16)
-COLOR_PLANTA = (60, 170, 80)
-COLOR_HERBIVORO = (220, 190, 90)
-COLOR_CARNIVORO = (200, 30, 40)
+def hex_a_rgb(codigo):
+    """'#B40000' -> (180, 0, 0)"""
+    codigo = codigo.lstrip("#")
+    return tuple(int(codigo[i:i + 2], 16) for i in (0, 2, 4))
+
+
+# Paleta rojo-negro en bandas (estilo 8 bits).
+# Regla: los organismos NO usan rojo; se distinguen por luminosidad y silueta.
+BANDAS_FONDO = tuple(hex_a_rgb(c) for c in
+                     ("#3C0A0A", "#280000", "#1E0000", "#140000", "#0A0000", "#000000"))
+
+COLOR_SOMBRA = hex_a_rgb("#280000")
+COLOR_ROJO_BASE = hex_a_rgb("#B40000")
+COLOR_ROJO_BRILLO = hex_a_rgb("#FF3232")
+COLOR_TEXTO = hex_a_rgb("#FFC8C8")
+
+COLOR_SUELO = hex_a_rgb("#1A1214")
+COLOR_PLANTA = hex_a_rgb("#2F7A3A")
+COLOR_BROTE = hex_a_rgb("#7FBF5A")
+COLOR_FLOR = hex_a_rgb("#F2C94C")
+COLOR_GUATUSA = hex_a_rgb("#B5763A")      # Herbívoro
+COLOR_TIGRILLO = hex_a_rgb("#E6C98A")     # Carnívoro
+COLOR_MANCHAS = hex_a_rgb("#1E1A16")
+
+# Primero cuadrados de colores; los sprites pixel art se agregan al final.
+COLORES_POR_ESPECIE = {
+    "Planta": COLOR_PLANTA,
+    "Herbivoro": COLOR_GUATUSA,
+    "Carnivoro": COLOR_TIGRILLO,
+}
 
 TAMANO_CELDA = 48  # píxeles
 

@@ -1,8 +1,8 @@
 """
 Fase 6 — Guardar y cargar el estado completo del ecosistema (JSON).
 
-El archivo debe incluir el turno, el tamaño del grid y, por cada organismo:
-especie, fila, columna, energía y edad.
+El archivo debe incluir el turno, la semilla, el tamaño del grid y, por cada
+organismo: especie, fila, columna, energía, edad y si está vivo.
 """
 
 import json  # noqa: F401  (se usará al implementar)
