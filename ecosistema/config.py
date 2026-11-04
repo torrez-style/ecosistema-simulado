@@ -1,13 +1,16 @@
 """
 Parámetros del ecosistema.
 
-Valores de referencia de la tabla de la sección 4 de la guía del proyecto.
-Si los cambian, documenten el cambio en docs/decisiones_diseno.md (Fase 8).
+Valores de referencia de la tabla de la sección 4 de la guía del proyecto,
+con DOS ajustes para que el ecosistema dure varias decenas de turnos
+(ver docs/decisiones_diseno.md y herramientas/probar_balance.py):
+    - Grid de 20 x 20 (la guía sugiere 10 x 10, "ajustable").
+    - Metabolismo del carnívoro: 1 por turno (referencia: 2).
 """
 
 # --- Mundo (sección 4.1) ---------------------------------------------------
-FILAS = 10
-COLUMNAS = 10
+FILAS = 20       # referencia: 10
+COLUMNAS = 20    # referencia: 10
 
 # Cantidad inicial de organismos por especie (no ocupar más del 30-40 % del grid)
 POBLACION_INICIAL = {
@@ -43,7 +46,7 @@ PARAMETROS = {
     "Carnivoro": {
         "energia_inicial": 15,
         "energia_max": 30,
-        "metabolismo": 2,
+        "metabolismo": 1,     # referencia: 2
         "ganancia": 10,       # al comer un herbívoro
         "edad_max": 45,
     },

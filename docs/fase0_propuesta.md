@@ -29,6 +29,6 @@ Mundo  (contiene la lista de organismos y el grid)
 
 ## Boceto de reglas
 
-- Grid de 10 × 10, bordes duros, 8 vecinas (con diagonales).
+- Grid de 20 × 20 (la guía sugiere 10 × 10, ajustable), bordes duros, 8 vecinas (con diagonales).
 - Orden del turno: Plantas → Herbívoros → Carnívoros → muertes → reproducciones → refrescar.
-- Parámetros: los de referencia de la guía (ver `ecosistema/config.py`).
+- Parámetros: los de referencia de la guía, con el metabolismo del carnívoro en 1 (ver `ecosistema/config.py` y `docs/decisiones_diseno.md`).

@@ -35,7 +35,7 @@ COLORES_POR_ESPECIE = {
     "Carnivoro": COLOR_TIGRILLO,
 }
 
-TAMANO_CELDA = 48  # píxeles
+TAMANO_CELDA = 32  # píxeles (grid de 20 x 20 -> 640 x 640)
 
 
 class Ventana:

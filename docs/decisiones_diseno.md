@@ -21,11 +21,43 @@ en el documento breve de la entrega.
   de inmediato; el paso 4 envejece a todos y retira a los que superan la edad máxima.
 - **Bitácora:** `Mundo` guarda en una lista de texto lo que pasó en el turno,
   para mostrarlo en consola (no es un sistema de eventos).
-- **Cambios a los parámetros de referencia:** _ninguno por ahora_. Con los valores
-  de la guía los herbívoros se extinguen entre el turno 7 y el 17 (probado con
-  10 semillas); la corrida de ejemplo del profe muestra la misma tendencia
-  (herbívoros de 8 a 2 en 10 turnos). Hay que ajustarlos para cumplir la
-  sección 4: "estable durante varias decenas de turnos".
+## Ajuste de parámetros (sección 4: "estable durante varias decenas de turnos")
+
+**Cambios respecto a la tabla de referencia (solo dos; ninguna mecánica cambia):**
+
+| Parámetro | Referencia | Usado | Por qué |
+|---|---|---|---|
+| Tamaño del grid | 10 × 10 | 20 × 20 | La guía lo marca como "ajustable". Más espacio evita que las plantas llenen el grid y dejen atrapados a los carnívoros. |
+| Metabolismo del carnívoro | −2 | −1 | Los carnívoros sobreviven más tiempo entre presas en un mundo más grande, sin reproducirse más rápido. |
+
+La población inicial sigue siendo 15 / 8 / 3 (ocupa el 6,5 % del grid, por debajo
+del 30-40 % del FAQ P7). Sigue cumpliéndose el FAQ P17: el umbral de 70 % hace
+que el padre conserve energía positiva después de reproducirse.
+
+**Resultados (100 semillas, `python -m herramientas.probar_balance`):**
+
+| | Mediana de duración | Llegan a 30 turnos | Llegan a 50 turnos |
+|---|---|---|---|
+| Tabla de referencia, 10 × 10 | 14 turnos | 8 % | 0 % |
+| Con los dos ajustes, 20 × 20 | 38 turnos | 77 % | 14 % |
+
+**Cómo se eligieron:**
+
+1. Con la tabla de referencia, el ecosistema dura una mediana de 14 turnos y casi
+   siempre caen primero los herbívoros. La corrida de ejemplo de los profesores
+   muestra la misma tendencia (herbívoros de 8 a 2 en 10 turnos).
+2. Se probó cada cambio por separado: ninguno alcanzó.
+3. Se probaron **todas** las combinaciones de uno y dos cambios (1 257 en total).
+   La mejor fue grid 20 × 20 + metabolismo del carnívoro en 1.
+4. Agregar un tercer cambio solo subía la mediana de 38 a unos 40 turnos, así que
+   no se justificaba alejarse más de la tabla.
+
+**Hallazgo:** con estas mecánicas, ningún ajuste de números logra un equilibrio
+permanente. Incluso cambiando 9 valores de la tabla, el promedio no pasa de unos
+70 turnos. Las poblaciones oscilan como en el modelo depredador-presa de
+Lotka-Volterra y, en un grid finito, la especie que está en su mínimo termina
+extinguiéndose. Por eso el juego termina con la extinción y el puntaje son los
+turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - **Fin de partida:** cuando una especie llega a 0 (pantalla de extinción);
   puntaje = turnos sobrevividos. _Validar con los profes._
 

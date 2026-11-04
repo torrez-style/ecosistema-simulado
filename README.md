@@ -17,7 +17,8 @@ python main.py 30 7         # 30 turnos con semilla 7
 ## Pruebas
 
 ```bash
-python -m unittest discover -s pruebas -t .
+python -m unittest discover -s pruebas -t .   # pruebas automáticas
+python -m herramientas.probar_balance         # cuánto dura el ecosistema
 ```
 
 ## Estructura
@@ -39,6 +40,8 @@ ecosistema-simulado/
 ├── interfaz/                  # Fase 7 (pygame) + música 8-bit
 │   ├── ventana.py
 │   └── musica.py
+├── herramientas/
+│   └── probar_balance.py      # mide cuántos turnos dura el ecosistema
 ├── pruebas/                   # pruebas automáticas (unittest)
 │   └── test_simulacion.py
 ├── docs/
@@ -55,7 +58,8 @@ ecosistema-simulado/
 - [x] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
 - [x] Fase 3 — Ciclo de turnos y comportamientos
 - [ ] Fase 4 — Búsqueda u ordenamiento (presa más cercana lista; falta ranking opcional)
-- [ ] Ajuste de parámetros para que el ecosistema dure varias decenas de turnos
+- [x] Ajuste de parámetros: grid 20 × 20 y metabolismo del carnívoro en 1
+      (mediana de 38 turnos; ver `docs/decisiones_diseno.md`)
 - [ ] Fase 5 — Recursividad (colonias de plantas)
 - [ ] Fase 6 — Guardar / cargar en JSON
 - [ ] Fase 7 — Interfaz gráfica con pygame
