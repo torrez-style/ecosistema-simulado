@@ -9,6 +9,7 @@ import sys
 
 from ecosistema import config
 from ecosistema.mundo import Mundo
+from ecosistema.recursividad import colonias
 from ecosistema.organismos import Organismo, Planta, Herbivoro, Carnivoro, ESPECIES
 
 
@@ -87,6 +88,11 @@ def mostrar_poblacion(mundo):
     poblacion = mundo.poblacion()
     partes = [f"{nombre}: {poblacion.get(nombre, 0)}" for nombre in ESPECIES]
     print("Población -> " + " | ".join(partes))
+
+    # Fase 5: colonias de plantas contadas con recursión
+    tamanos = colonias(mundo)
+    if tamanos:
+        print(f"Colonias de plantas: {len(tamanos)} | la más grande: {tamanos[0]} plantas")
 
 
 def prueba_fase3(turnos=10, semilla=42):

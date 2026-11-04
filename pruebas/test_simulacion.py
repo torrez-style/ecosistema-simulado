@@ -10,6 +10,7 @@ import unittest
 from ecosistema import config
 from ecosistema.mundo import Mundo
 from ecosistema.organismos import Organismo, Planta, Herbivoro, Carnivoro, ESPECIES
+from ecosistema.recursividad import tamano_colonia, colonias
 
 
 def mundo_poblado(semilla):
@@ -110,6 +111,46 @@ class PruebasMundo(unittest.TestCase):
                                for f in range(mundo.filas)
                                for c in range(mundo.columnas))
                 self.assertEqual(ocupadas, len(mundo.organismos))
+
+
+class PruebasRecursividad(unittest.TestCase):
+
+    def test_colonia_en_forma_de_l(self):
+        mundo = Mundo(5, 5)
+        for fila, columna in ((0, 0), (1, 0), (2, 0), (2, 1), (2, 2)):
+            mundo.colocar(Planta(fila, columna))
+        self.assertEqual(tamano_colonia(mundo, 0, 0), 5)
+        self.assertEqual(tamano_colonia(mundo, 2, 2), 5)
+
+    def test_diagonal_conecta(self):
+        mundo = Mundo(5, 5)
+        mundo.colocar(Planta(0, 0))
+        mundo.colocar(Planta(1, 1))
+        self.assertEqual(tamano_colonia(mundo, 0, 0), 2)
+
+    def test_animales_cortan_la_colonia(self):
+        mundo = Mundo(5, 5)
+        mundo.colocar(Planta(0, 0))
+        mundo.colocar(Herbivoro(0, 1))
+        mundo.colocar(Planta(0, 2))
+        self.assertEqual(tamano_colonia(mundo, 0, 0), 1)
+        self.assertEqual(colonias(mundo), [1, 1])
+
+    def test_celda_vacia_es_caso_base(self):
+        self.assertEqual(tamano_colonia(Mundo(5, 5), 2, 2), 0)
+
+    def test_grid_lleno_de_plantas_no_se_enciclan(self):
+        mundo = Mundo(20, 20)
+        for fila in range(20):
+            for columna in range(20):
+                mundo.colocar(Planta(fila, columna))
+        self.assertEqual(tamano_colonia(mundo, 10, 10), 400)
+
+    def test_colonias_suman_todas_las_plantas(self):
+        mundo = mundo_poblado(3)
+        for _ in range(10):
+            mundo.ejecutar_turno()
+        self.assertEqual(sum(colonias(mundo)), mundo.poblacion().get("Planta", 0))
 
 
 if __name__ == "__main__":

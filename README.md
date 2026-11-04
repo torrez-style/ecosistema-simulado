@@ -60,7 +60,7 @@ ecosistema-simulado/
 - [ ] Fase 4 — Búsqueda u ordenamiento (presa más cercana lista; falta ranking opcional)
 - [x] Ajuste de parámetros: grid 20 × 20 y metabolismo del carnívoro en 1
       (mediana de 38 turnos; ver `docs/decisiones_diseno.md`)
-- [ ] Fase 5 — Recursividad (colonias de plantas)
+- [x] Fase 5 — Recursividad: colonias de plantas con flood-fill (`ecosistema/recursividad.py`)
 - [ ] Fase 6 — Guardar / cargar en JSON
 - [ ] Fase 7 — Interfaz gráfica con pygame
 - [ ] Fase 8 — Documento de decisiones y defensa oral
