@@ -21,6 +21,7 @@ en el documento breve de la entrega.
   de inmediato; el paso 4 envejece a todos y retira a los que superan la edad máxima.
 - **Bitácora:** `Mundo` guarda en una lista de texto lo que pasó en el turno,
   para mostrarlo en consola (no es un sistema de eventos).
+
 ## Ajuste de parámetros (sección 4: "estable durante varias decenas de turnos")
 
 **Cambios respecto a la tabla de referencia (solo dos; ninguna mecánica cambia):**
@@ -76,6 +77,10 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - **Persistencia (Fase 6):** JSON con turno, semilla y, por organismo, especie,
   posición, energía, edad y estado.
 - **Interfaz (Fase 7):** pygame; primero cuadrados de colores, sprites al final.
+  La ventana se adapta a cualquier pantalla (tamaño y proporción), tomando como
+  referencia cómo lo resolvió Maze Run.
+- **Gráficos:** todos los personajes y figuras se dibujan con píxeles (pixel art),
+  sin imágenes externas.
 
 ## Estética — *Panta Rhei* (nombre provisional)
 
