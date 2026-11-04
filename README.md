@@ -42,7 +42,7 @@ ecosistema-simulado/
 
 - [ ] Fase 0 — Propuesta corta (`docs/fase0_propuesta.md`)
 - [ ] Fase 1 — Núcleo de clases (Organismo listo; faltan reproducción y actuar de H y C)
-- [ ] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
+- [x] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
 - [ ] Fase 3 — Ciclo de turnos y comportamientos
 - [ ] Fase 4 — Búsqueda u ordenamiento
 - [ ] Fase 5 — Recursividad (colonias de plantas)
