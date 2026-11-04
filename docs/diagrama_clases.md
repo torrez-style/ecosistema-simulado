@@ -11,6 +11,7 @@ classDiagram
         <<abstracta>>
         +PARAMETROS: dict$
         +SIMBOLO: str$
+        +ORDEN_EN_TURNO: int$
         #_fila: int
         #_columna: int
         #_energia: int
@@ -19,6 +20,7 @@ classDiagram
         +fila: int
         +columna: int
         +posicion: tuple
+        +nombre: str
         +energia: int
         +edad: int
         +vivo: bool
@@ -34,24 +36,32 @@ classDiagram
         +puede_reproducirse() bool
         +pagar_reproduccion()
         +morir()
+        #_preparar_cria(mundo) tuple
+        #_registrar_nacimiento(mundo, cria)
+        #_comer(mundo, presa)
+        #_moverse_al_azar(mundo)
+        #_pagar_metabolismo_o_morir(mundo) bool
         +actuar(mundo)*
         +reproducirse(mundo)*
     }
 
     class Planta {
         +SIMBOLO = "P"$
+        +ORDEN_EN_TURNO = 1$
         +actuar(mundo)
         +reproducirse(mundo)
     }
 
     class Herbivoro {
         +SIMBOLO = "H"$
+        +ORDEN_EN_TURNO = 2$
         +actuar(mundo)
         +reproducirse(mundo)
     }
 
     class Carnivoro {
         +SIMBOLO = "C"$
+        +ORDEN_EN_TURNO = 3$
         +actuar(mundo)
         +reproducirse(mundo)
     }
@@ -63,19 +73,29 @@ classDiagram
         #_grid: list~list~
         #_organismos: list~Organismo~
         #_turno: int
+        #_semilla: int
+        #_azar: Generator
+        #_bitacora: list~str~
         +filas: int
         +columnas: int
         +turno: int
+        +semilla: int
         +organismos: list~Organismo~
+        +bitacora: list~str~
         +esta_dentro(fila, columna) bool
         +celda(fila, columna) Organismo
         +vecinas(fila, columna) list
         +vecinas_libres(fila, columna) list
+        +celdas_libres() list
+        +elegir(opciones)
+        +registrar(texto)
+        +poblacion() dict
         +colocar(organismo)
         +poblar_aleatorio(poblacion_inicial)
         +mover(organismo, fila, columna)
         +retirar(organismo)
         +ejecutar_turno()
+        #_validar_destino(fila, columna)
     }
 
     Organismo <|-- Planta

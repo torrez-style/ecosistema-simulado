@@ -26,6 +26,8 @@ class Mundo:
         # Generador de azar de numpy: con la misma semilla, la misma corrida.
         self._semilla = semilla
         self._azar = np.random.default_rng(semilla)
+        # Lo que pasó en el último turno, en texto (para la consola)
+        self._bitacora = []
 
     # ------------------------------------------------------------------
     # Propiedades
@@ -45,6 +47,22 @@ class Mundo:
     @property
     def semilla(self):
         return self._semilla
+
+    @property
+    def bitacora(self):
+        return list(self._bitacora)
+
+    def registrar(self, texto):
+        """Anota un suceso del turno actual en la bitácora."""
+        self._bitacora.append(texto)
+
+    def poblacion(self):
+        """Cantidad de organismos vivos por especie: {"Planta": 9, ...}."""
+        conteo = {}
+        for organismo in self._organismos:
+            if organismo.vivo:
+                conteo[organismo.nombre] = conteo.get(organismo.nombre, 0) + 1
+        return conteo
 
     @property
     def organismos(self):
@@ -141,18 +159,45 @@ class Mundo:
     # Fase 3: ciclo de un turno (orden fijo de la sección 4.5)
     # ------------------------------------------------------------------
     def ejecutar_turno(self):
-        # TODO:
-        #   0. Tomar una lista fija de los organismos vivos al inicio del turno.
-        #   1. Actúan las Plantas.
-        #   2. Actúan los Herbívoros.
-        #   3. Actúan los Carnívoros.
-        #   4. Muertes por energía 0 o por edad máxima (envejecer primero).
-        #   5. Reproducciones.
-        #   6. self._turno += 1
-        #
-        # Ojo: nada de if/elif por "tipo" para decidir el comportamiento;
-        # cada organismo hace lo suyo con organismo.actuar(self).
-        raise NotImplementedError("Fase 3: Mundo.ejecutar_turno()")
+        """
+        Un turno completo en el orden fijo de la sección 4.5.
+        Nada de if/elif por especie: cada organismo hace lo suyo con actuar().
+        """
+        self._bitacora = []
+
+        # 0. Lista fija de los vivos al inicio, ordenada por ORDEN_EN_TURNO
+        #    (Plantas 1, Herbívoros 2, Carnívoros 3). sorted() es estable:
+        #    dentro de cada especie se respeta el orden de la lista del mundo.
+        vivos_al_inicio = sorted(
+            (o for o in self._organismos if o.vivo),
+            key=lambda organismo: organismo.ORDEN_EN_TURNO,
+        )
+
+        # 1-3. Actúan Plantas, luego Herbívoros, luego Carnívoros
+        for organismo in vivos_al_inicio:
+            if organismo.vivo:                 # pudo ser comido en este turno
+                organismo.actuar(self)
+                if not organismo.vivo:         # murió de hambre al actuar
+                    self.retirar(organismo)
+
+        # 4. Barrido de muertes: energía en 0 o edad máxima superada
+        for organismo in vivos_al_inicio:
+            if organismo.vivo:
+                organismo.envejecer()
+                if organismo.supera_edad_maxima():
+                    organismo.morir()
+                    self.registrar(f"{organismo.nombre} {organismo.posicion} murió de vieja "
+                                   f"(edad {organismo.edad})")
+            if not organismo.vivo:
+                self.retirar(organismo)
+
+        # 5. Reproducciones (las crías no están en la lista: no actúan hoy)
+        for organismo in vivos_al_inicio:
+            if organismo.vivo:
+                organismo.reproducirse(self)
+
+        # 6. Fin del turno
+        self._turno += 1
 
     # ------------------------------------------------------------------
     # Mostrar el grid como texto

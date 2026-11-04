@@ -1,9 +1,11 @@
 """
 Punto de entrada del proyecto.
 
-Por ahora corre la prueba de consola de la Fase 1: crear organismos y
-llamar a sus métodos por separado, sin grid ni interfaz.
+Por ahora corre la simulación por consola (Fase 3). Las pruebas de las
+Fases 1 y 2 siguen aquí: se pueden llamar desde el bloque de abajo.
 """
+
+import sys
 
 from ecosistema import config
 from ecosistema.mundo import Mundo
@@ -73,6 +75,44 @@ def prueba_fase2():
     print(f"\n{mundo}")
 
 
+def crear_mundo(semilla):
+    mundo = Mundo(config.FILAS, config.COLUMNAS, semilla)
+    poblacion = {ESPECIES[nombre]: cantidad
+                 for nombre, cantidad in config.POBLACION_INICIAL.items()}
+    mundo.poblar_aleatorio(poblacion)
+    return mundo
+
+
+def mostrar_poblacion(mundo):
+    poblacion = mundo.poblacion()
+    partes = [f"{nombre}: {poblacion.get(nombre, 0)}" for nombre in ESPECIES]
+    print("Población -> " + " | ".join(partes))
+
+
+def prueba_fase3(turnos=10, semilla=42):
+    print(f"=== Fase 3: simulación por consola ({turnos} turnos, semilla {semilla}) ===\n")
+    mundo = crear_mundo(semilla)
+    print("Turno 0")
+    print(mundo)
+    mostrar_poblacion(mundo)
+
+    for _ in range(turnos):
+        mundo.ejecutar_turno()
+        print(f"\n--- Turno {mundo.turno} ---")
+        for suceso in mundo.bitacora:
+            print(f"  • {suceso}")
+        print()
+        print(mundo)
+        mostrar_poblacion(mundo)
+
+        extintas = [nombre for nombre in ESPECIES if mundo.poblacion().get(nombre, 0) == 0]
+        if extintas:
+            print(f"\nExtinción de: {', '.join(extintas)}. Fin de la simulación.")
+            break
+
+
 if __name__ == "__main__":
-    prueba_fase1()
-    prueba_fase2()
+    # Uso: python main.py [turnos] [semilla]
+    turnos = int(sys.argv[1]) if len(sys.argv) > 1 else 10
+    semilla = int(sys.argv[2]) if len(sys.argv) > 2 else 42
+    prueba_fase3(turnos, semilla)

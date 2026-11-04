@@ -4,13 +4,20 @@ Proyecto final de **MO-0002 Programación I** (UCR, Sede de Occidente, II Ciclo 
 Una cuadrícula donde plantas, herbívoros y carnívoros nacen, se mueven, comen,
 se reproducen y mueren por turnos.
 
-**Entrega:** 17 de noviembre de 2026, 8 a. m.
+**Entrega:** 24 de noviembre de 2026.
 
 ## Cómo correrlo
 
 ```bash
 pip install -r requirements.txt
-python main.py
+python main.py              # 10 turnos con semilla 42
+python main.py 30 7         # 30 turnos con semilla 7
+```
+
+## Pruebas
+
+```bash
+python -m unittest discover -s pruebas -t .
 ```
 
 ## Estructura
@@ -32,19 +39,23 @@ ecosistema-simulado/
 ├── interfaz/                  # Fase 7 (pygame) + música 8-bit
 │   ├── ventana.py
 │   └── musica.py
+├── pruebas/                   # pruebas automáticas (unittest)
+│   └── test_simulacion.py
 ├── docs/
 │   ├── fase0_propuesta.md
+│   ├── diagrama_clases.md
 │   └── decisiones_diseno.md
 └── guardados/                 # partidas guardadas (JSON)
 ```
 
 ## Avance por fases
 
-- [ ] Fase 0 — Propuesta corta (`docs/fase0_propuesta.md`)
-- [ ] Fase 1 — Núcleo de clases (Organismo listo; faltan reproducción y actuar de H y C)
+- [x] Fase 0 — Propuesta corta (`docs/fase0_propuesta.md`, `docs/diagrama_clases.md`)
+- [x] Fase 1 — Núcleo de clases
 - [x] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
-- [ ] Fase 3 — Ciclo de turnos y comportamientos
-- [ ] Fase 4 — Búsqueda u ordenamiento
+- [x] Fase 3 — Ciclo de turnos y comportamientos
+- [ ] Fase 4 — Búsqueda u ordenamiento (presa más cercana lista; falta ranking opcional)
+- [ ] Ajuste de parámetros para que el ecosistema dure varias decenas de turnos
 - [ ] Fase 5 — Recursividad (colonias de plantas)
 - [ ] Fase 6 — Guardar / cargar en JSON
 - [ ] Fase 7 — Interfaz gráfica con pygame

@@ -18,6 +18,7 @@ class Organismo(ABC):
 
     PARAMETROS = {}
     SIMBOLO = "?"
+    ORDEN_EN_TURNO = 0   # en qué fase del turno actúa la especie (sección 4.5)
 
     def __init__(self, fila, columna, energia=None):
         self.fila = fila
@@ -56,6 +57,11 @@ class Organismo(ABC):
     @property
     def posicion(self):
         return (self._fila, self._columna)
+
+    @property
+    def nombre(self):
+        """Nombre de la especie: "Planta", "Herbivoro", ..."""
+        return type(self).__name__
 
     # energia, edad y vivo son de solo lectura: se cambian únicamente con
     # los métodos de abajo (encapsulamiento, sección 6 de la guía).
@@ -125,6 +131,51 @@ class Organismo(ABC):
 
     def morir(self):
         self._vivo = False
+
+    # ------------------------------------------------------------------
+    # Ayudantes que usan las subclases (protegidos: no se llaman desde afuera)
+    # ------------------------------------------------------------------
+    def _preparar_cria(self, mundo):
+        """
+        Si puede reproducirse y hay una vecina libre, paga el costo y
+        devuelve la celda sorteada para la cría. Si no, devuelve None.
+        """
+        if not self.puede_reproducirse():
+            return None
+        celda = mundo.elegir(mundo.vecinas_libres(*self.posicion))
+        if celda is None:
+            return None
+        self.pagar_reproduccion()
+        return celda
+
+    def _registrar_nacimiento(self, mundo, cria):
+        mundo.colocar(cria)
+        mundo.registrar(f"{self.nombre} {self.posicion} se reprodujo: "
+                        f"cría en {cria.posicion} (padre queda con {self.energia})")
+
+    def _comer(self, mundo, presa):
+        """La presa muere, su celda queda libre y el depredador la ocupa (sección 4.2)."""
+        fila, columna = presa.posicion
+        presa.morir()
+        mundo.retirar(presa)
+        origen = self.posicion
+        mundo.mover(self, fila, columna)
+        self.ganar_energia(self.PARAMETROS["ganancia"])
+        mundo.registrar(f"{self.nombre} {origen} se comió a {presa.nombre} "
+                        f"en {self.posicion} (energía {self.energia})")
+
+    def _moverse_al_azar(self, mundo):
+        """Va a una vecina libre al azar; si no hay ninguna, se queda quieto (FAQ P10)."""
+        destino = mundo.elegir(mundo.vecinas_libres(*self.posicion))
+        if destino is not None:
+            mundo.mover(self, *destino)
+
+    def _pagar_metabolismo_o_morir(self, mundo):
+        """Paga su metabolismo; devuelve False si murió de hambre."""
+        self.pagar_metabolismo()
+        if not self.vivo:
+            mundo.registrar(f"{self.nombre} {self.posicion} murió de hambre")
+        return self.vivo
 
     # ------------------------------------------------------------------
     # Comportamiento propio de cada especie (polimorfismo)

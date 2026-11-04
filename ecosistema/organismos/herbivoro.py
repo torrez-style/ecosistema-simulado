@@ -1,5 +1,7 @@
 from ecosistema import config
+from ecosistema.busqueda import presa_mas_cercana
 from ecosistema.organismos.organismo import Organismo
+from ecosistema.organismos.planta import Planta
 
 
 class Herbivoro(Organismo):
@@ -7,16 +9,21 @@ class Herbivoro(Organismo):
 
     PARAMETROS = config.PARAMETROS["Herbivoro"]
     SIMBOLO = "H"
+    ORDEN_EN_TURNO = 2
 
     def actuar(self, mundo):
-        # TODO (Fase 3), sección 4.2:
-        #   1. pagar_metabolismo(); si murió, termina aquí.
-        #   2. Buscar Plantas VIVAS en las 8 celdas vecinas.
-        #   3. Si hay: elegir una, marcarla muerta, moverse a su celda
-        #      y ganar_energia(PARAMETROS["ganancia"]).
-        #   4. Si no: moverse a una vecina libre al azar (si no hay, se queda).
-        raise NotImplementedError("Fase 3: Herbivoro.actuar()")
+        if not self._pagar_metabolismo_o_morir(mundo):
+            return
+        planta = presa_mas_cercana(mundo, self, Planta)
+        if planta is not None:
+            self._comer(mundo, planta)
+        else:
+            self._moverse_al_azar(mundo)
 
     def reproducirse(self, mundo):
-        # TODO (Fase 3): misma lógica que Planta.reproducirse()
-        raise NotImplementedError("Fase 3: Herbivoro.reproducirse()")
+        celda = self._preparar_cria(mundo)
+        if celda is None:
+            return None
+        cria = Herbivoro(*celda, energia=self.energia_al_nacer)
+        self._registrar_nacimiento(mundo, cria)
+        return cria
