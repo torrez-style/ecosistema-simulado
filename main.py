@@ -16,6 +16,7 @@ import argparse
 import sys
 
 from ecosistema import persistencia
+from ecosistema.busqueda import ranking_por_energia
 from ecosistema.organismos import ESPECIES
 from ecosistema.partida import crear_mundo, especies_extintas, semilla_aleatoria
 from ecosistema.recursividad import colonias
@@ -30,6 +31,11 @@ def mostrar_poblacion(mundo):
     tamanos = colonias(mundo)
     if tamanos:
         print(f"Colonias de plantas: {len(tamanos)} | la más grande: {tamanos[0]} plantas")
+
+    # Fase 4: ranking por energía (ordenamiento por inserción)
+    top = ranking_por_energia(mundo.organismos, 3)
+    print("Más energía -> " + " | ".join(
+        f"{puesto}. {o.nombre} {o.posicion}: {o.energia}" for puesto, o in enumerate(top, start=1)))
 
 
 def simular_en_consola(mundo, turnos):

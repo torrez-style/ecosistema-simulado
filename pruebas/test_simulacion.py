@@ -13,6 +13,7 @@ import unittest
 from ecosistema import config, persistencia
 from ecosistema.mundo import Mundo
 from ecosistema.organismos import Organismo, Planta, Herbivoro, Carnivoro, ESPECIES
+from ecosistema.busqueda import ranking_por_energia
 from ecosistema.recursividad import tamano_colonia, colonias
 
 
@@ -114,6 +115,39 @@ class PruebasMundo(unittest.TestCase):
                                for f in range(mundo.filas)
                                for c in range(mundo.columnas))
                 self.assertEqual(ocupadas, len(mundo.organismos))
+
+
+class PruebasRanking(unittest.TestCase):
+
+    def test_ordena_de_mayor_a_menor_energia(self):
+        organismos = [Planta(0, 0, energia=5), Carnivoro(0, 1, energia=28),
+                      Herbivoro(0, 2, energia=12), Planta(0, 3, energia=19)]
+        energias = [o.energia for o in ranking_por_energia(organismos)]
+        self.assertEqual(energias, [28, 19, 12, 5])
+
+    def test_es_estable_con_empates(self):
+        primero = Planta(0, 0, energia=10)
+        segundo = Herbivoro(0, 1, energia=10)
+        tercero = Planta(0, 2, energia=10)
+        self.assertEqual(ranking_por_energia([primero, segundo, tercero]),
+                         [primero, segundo, tercero])
+
+    def test_top_y_no_modifica_la_original(self):
+        organismos = [Planta(0, c, energia=e) for c, e in enumerate((3, 9, 1, 7, 5))]
+        copia = list(organismos)
+        top = ranking_por_energia(organismos, 3)
+        self.assertEqual([o.energia for o in top], [9, 7, 5])
+        self.assertEqual(organismos, copia)
+
+    def test_coincide_con_sorted_en_un_mundo_real(self):
+        mundo = mundo_poblado(8)
+        for _ in range(15):
+            mundo.ejecutar_turno()
+        esperado = sorted(mundo.organismos, key=lambda o: o.energia, reverse=True)
+        self.assertEqual(ranking_por_energia(mundo.organismos), esperado)
+
+    def test_lista_vacia(self):
+        self.assertEqual(ranking_por_energia([]), [])
 
 
 class PruebasRecursividad(unittest.TestCase):

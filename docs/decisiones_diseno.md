@@ -71,7 +71,15 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - **numpy:** audio, sprites, estadísticas, historial de poblaciones y aleatoriedad
   con semilla. Si se usa una matriz numpy del grid, es solo una "fotografía" para
   dibujar o contar; nunca decide el comportamiento.
-- **Búsqueda (Fase 4):** presa viva más cercana entre las vecinas, usada dentro de `actuar()`.
+- **Búsqueda y ordenamiento (Fase 4):**
+  - `presa_mas_cercana()`: búsqueda lineal del mínimo entre las 8 vecinas,
+    usada dentro de `actuar()` para decidir a quién comer.
+  - `ranking_por_energia()`: ordenamiento por inserción escrito a mano (estable,
+    de mayor a menor energía). El top 3 se muestra al final de cada turno en la
+    ventana y en la consola. Se escribió a mano en vez de usar `sorted()` para
+    poder explicar el algoritmo; una prueba automática comprueba que da el mismo
+    resultado que `sorted()`.
+  - Además, `Mundo` ordena la lista de cada turno por `ORDEN_EN_TURNO`.
 - **Recursividad (Fase 5):** flood-fill de colonias de plantas conectadas, escrito
   por nosotros (sin scipy).
 - **Persistencia (Fase 6):** JSON con tamaño del grid, turno, semilla, **estado

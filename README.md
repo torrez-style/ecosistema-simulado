@@ -93,14 +93,15 @@ ecosistema-simulado/
 - [x] Fase 1 — Núcleo de clases
 - [x] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
 - [x] Fase 3 — Ciclo de turnos y comportamientos
-- [x] Fase 4 — Búsqueda de la presa más cercana (falta un ranking opcional)
+- [x] Fase 4 — Búsqueda de la presa más cercana y ranking por energía
+      (ordenamiento por inserción, top 3 en cada turno)
 - [x] Ajuste de parámetros: grid 20 × 20 y metabolismo del carnívoro en 1
       (mediana de 38 turnos; ver `docs/decisiones_diseno.md`)
 - [x] Fase 5 — Recursividad: colonias de plantas con flood-fill
 - [x] Fase 6 — Guardar / cargar en JSON (la partida continúa exactamente igual)
 - [x] Fase 7 — Interfaz gráfica con pygame (ventana adaptable y pixel art)
 - [ ] Fase 8 — Documento de decisiones y defensa oral
-- [ ] Extras opcionales: música 8 bits, ranking por energía
+- [ ] Extra opcional: música 8 bits
 
 ## Convenciones del curso
 

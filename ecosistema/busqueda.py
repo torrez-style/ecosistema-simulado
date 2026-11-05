@@ -1,8 +1,10 @@
 """
-Fase 4 — Búsqueda integrada a la simulación.
+Fase 4 — Búsqueda y ordenamiento integrados a la simulación.
 
-presa_mas_cercana() es la que usan Herbivoro.actuar() y Carnivoro.actuar()
-para decidir a quién comer (FAQ P11).
+- presa_mas_cercana(): búsqueda lineal del mínimo. La usan Herbivoro.actuar()
+  y Carnivoro.actuar() para decidir a quién comer (FAQ P11).
+- ranking_por_energia(): ordenamiento por inserción. El top 3 se muestra al
+  final de cada turno en la ventana y en la consola.
 """
 
 
@@ -33,7 +35,26 @@ def presa_mas_cercana(mundo, organismo, clase_presa):
     return mejor
 
 
-def ranking_por_energia(organismos):
-    # TODO (Fase 4, opcional): devolver la lista ordenada de mayor a menor
-    # energía y mostrarla al final de cada turno.
-    raise NotImplementedError("Fase 4: ranking_por_energia()")
+def ranking_por_energia(organismos, cantidad=None):
+    """
+    Ordenamiento por inserción, de mayor a menor energía.
+
+    Se recorre la lista y cada organismo se inserta en su lugar dentro de la
+    parte que ya está ordenada: se corre hacia la izquierda mientras el de al
+    lado tenga MENOS energía. Es estable: con la misma energía se conserva el
+    orden original. No modifica la lista que recibe.
+
+    cantidad: si se indica, devuelve solo los primeros (ej. el top 3).
+    Se muestra al final de cada turno en la ventana y en la consola.
+    """
+    ordenados = list(organismos)
+    for i in range(1, len(ordenados)):
+        actual = ordenados[i]
+        j = i - 1
+        while j >= 0 and ordenados[j].energia < actual.energia:
+            ordenados[j + 1] = ordenados[j]   # correr el de menos energía a la derecha
+            j -= 1
+        ordenados[j + 1] = actual
+    if cantidad is not None:
+        return ordenados[:cantidad]
+    return ordenados

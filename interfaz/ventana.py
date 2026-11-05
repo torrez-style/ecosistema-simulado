@@ -19,6 +19,7 @@ import pygame
 from ecosistema import persistencia
 from ecosistema.organismos import ESPECIES
 from ecosistema.partida import crear_mundo, especies_extintas, semilla_aleatoria
+from ecosistema.busqueda import ranking_por_energia
 from ecosistema.recursividad import colonias
 from interfaz import colores
 from interfaz.distribucion import calcular_distribucion
@@ -26,6 +27,9 @@ from interfaz.sprites import ESCALA_CRIA, Sprites, etapa_de
 
 TITULO_VENTANA = "Panta Rhei — Ecosistema simulado"
 NOMBRES = {"Planta": "Plantas", "Herbivoro": "Herbívoros", "Carnivoro": "Carnívoros"}
+NOMBRE_SINGULAR = {"Planta": "Planta", "Herbivoro": "Herbívoro", "Carnivoro": "Carnívoro"}
+TAMANO_RANKING = 3
+TIPOS_CON_ICONO = ("especie", "ranking")
 VELOCIDADES = (0.5, 1, 2, 4, 8, 15)   # turnos por segundo
 VELOCIDAD_INICIAL = 2                 # índice en VELOCIDADES
 FPS = 60
@@ -191,6 +195,7 @@ class Ventana:
         """Se calcula una vez por turno, no en cada cuadro."""
         self._poblacion = self._mundo.poblacion()
         self._colonias = colonias(self._mundo)
+        self._ranking = ranking_por_energia(self._mundo.organismos, TAMANO_RANKING)
         self._extintas = especies_extintas(self._mundo)
 
     # ------------------------------------------------------------------
@@ -342,6 +347,12 @@ class Ventana:
             informacion.append(("especie", especie,
                                 f"{NOMBRES[especie]}: {self._poblacion.get(especie, 0)}"))
         informacion.append(("chico", f"Colonias de plantas: {len(self._colonias)} (mayor: {mayor})"))
+        informacion.append(("chico", "Más energía:"))
+        for puesto, organismo in enumerate(self._ranking, start=1):
+            fila, columna = organismo.posicion
+            informacion.append(("ranking", organismo.nombre,
+                                f"{puesto}. {NOMBRE_SINGULAR[organismo.nombre]} "
+                                f"({fila},{columna}): {organismo.energia}"))
 
         controles = [
             ("normal", estado),
@@ -380,7 +391,7 @@ class Ventana:
                 alto = self._texto.medir("Ag", tamano)[1] + relleno
             else:
                 ancho, alto = self._texto.medir(fila[-1], tamano)
-                if tipo == "especie":
+                if tipo in TIPOS_CON_ICONO:
                     ancho += alto + self._espacio(unidad)
             ancho_total = max(ancho_total, ancho)
             alto_total += alto + self._espacio(unidad)
@@ -448,7 +459,7 @@ class Ventana:
                     etiqueta = self._texto.render(boton.etiqueta, tamano, colores.TEXTO)
                     pantalla.blit(etiqueta, etiqueta.get_rect(center=rect.center))
                 y += alto_boton
-            elif tipo == "especie":
+            elif tipo in TIPOS_CON_ICONO:
                 especie, texto = fila[1], fila[2]
                 superficie = self._texto.render(texto, tamano, colores.TEXTO)
                 lado = superficie.get_height()
