@@ -36,6 +36,7 @@ classDiagram
         +puede_reproducirse() bool
         +pagar_reproduccion()
         +morir()
+        +a_diccionario() dict
         #_preparar_cria(mundo) tuple
         #_registrar_nacimiento(mundo, cria)
         #_comer(mundo, presa)
@@ -95,6 +96,8 @@ classDiagram
         +mover(organismo, fila, columna)
         +retirar(organismo)
         +ejecutar_turno()
+        +a_diccionario() dict
+        +desde_diccionario(datos, especies)$ Mundo
         #_validar_destino(fila, columna)
     }
 

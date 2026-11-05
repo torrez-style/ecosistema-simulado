@@ -70,6 +70,49 @@ class Mundo:
         return list(self._organismos)
 
     # ------------------------------------------------------------------
+    # Fase 6: convertir el mundo a diccionario y reconstruirlo
+    # ------------------------------------------------------------------
+    def a_diccionario(self):
+        """
+        Estado completo del mundo, listo para guardarse en JSON.
+        Incluye el estado del generador de azar: así, al cargar, los
+        movimientos al azar siguen exactamente igual que sin interrupción.
+        La lista de organismos conserva su orden, que decide quién actúa primero.
+        """
+        return {
+            "filas": self._filas,
+            "columnas": self._columnas,
+            "turno": self._turno,
+            "semilla": self._semilla,
+            "estado_azar": self._azar.bit_generator.state,
+            "organismos": [organismo.a_diccionario() for organismo in self._organismos],
+        }
+
+    @classmethod
+    def desde_diccionario(cls, datos, especies):
+        """
+        Reconstruye un mundo guardado con a_diccionario().
+        especies: diccionario {"Planta": Planta, ...} para crear cada organismo
+        sin un if/elif por especie. Lanza ValueError si los datos no son válidos.
+        """
+        mundo = cls(datos["filas"], datos["columnas"], datos["semilla"])
+        if not isinstance(datos["turno"], int) or datos["turno"] < 0:
+            raise ValueError("El turno guardado no es válido.")
+        mundo._turno = datos["turno"]
+        mundo._azar.bit_generator.state = datos["estado_azar"]
+
+        for guardado in datos["organismos"]:
+            if not guardado["vivo"]:
+                continue
+            clase = especies.get(guardado["especie"])
+            if clase is None:
+                raise ValueError(f"Especie desconocida: {guardado['especie']}")
+            organismo = clase(guardado["fila"], guardado["columna"],
+                              energia=guardado["energia"], edad=guardado["edad"])
+            mundo.colocar(organismo)   # valida bordes y celdas repetidas
+        return mundo
+
+    # ------------------------------------------------------------------
     # Consultas sobre el grid
     # ------------------------------------------------------------------
     def esta_dentro(self, fila, columna):

@@ -74,8 +74,14 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - **Búsqueda (Fase 4):** presa viva más cercana entre las vecinas, usada dentro de `actuar()`.
 - **Recursividad (Fase 5):** flood-fill de colonias de plantas conectadas, escrito
   por nosotros (sin scipy).
-- **Persistencia (Fase 6):** JSON con turno, semilla y, por organismo, especie,
-  posición, energía, edad y estado.
+- **Persistencia (Fase 6):** JSON con tamaño del grid, turno, semilla, **estado
+  del generador de azar** y, por organismo, especie, posición, energía, edad y
+  estado. Cada clase se convierte a sí misma en diccionario (`a_diccionario()`),
+  así nadie toca atributos protegidos desde afuera. Guardar el estado del azar y
+  el orden de la lista hace que una partida cargada continúe *exactamente* igual
+  que una que nunca se cerró (hay una prueba automática que lo comprueba). Si el
+  archivo no existe o está dañado, se lanza un error claro en vez de seguir con
+  datos vacíos.
 - **Interfaz (Fase 7):** pygame; primero cuadrados de colores, sprites al final.
   La ventana se adapta a cualquier pantalla (tamaño y proporción), tomando como
   referencia cómo lo resolvió Maze Run.

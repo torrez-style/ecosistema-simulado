@@ -10,8 +10,10 @@ se reproducen y mueren por turnos.
 
 ```bash
 pip install -r requirements.txt
-python main.py              # 10 turnos con semilla 42
-python main.py 30 7         # 30 turnos con semilla 7
+python main.py                   # 10 turnos con semilla 42
+python main.py 30 7              # 30 turnos con semilla 7
+python main.py 10 --guardar      # ... y guarda la partida en guardados/partida.json
+python main.py 10 --cargar       # sigue 10 turnos desde la partida guardada
 ```
 
 ## Pruebas
@@ -61,7 +63,7 @@ ecosistema-simulado/
 - [x] Ajuste de parámetros: grid 20 × 20 y metabolismo del carnívoro en 1
       (mediana de 38 turnos; ver `docs/decisiones_diseno.md`)
 - [x] Fase 5 — Recursividad: colonias de plantas con flood-fill (`ecosistema/recursividad.py`)
-- [ ] Fase 6 — Guardar / cargar en JSON
+- [x] Fase 6 — Guardar / cargar en JSON (la partida continúa exactamente igual)
 - [ ] Fase 7 — Interfaz gráfica con pygame
 - [ ] Fase 8 — Documento de decisiones y defensa oral
 

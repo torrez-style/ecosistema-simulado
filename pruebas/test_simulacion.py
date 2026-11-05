@@ -5,9 +5,12 @@ Correr desde la carpeta del proyecto:
     python -m unittest discover -s pruebas -t .
 """
 
+import json
+import os
+import tempfile
 import unittest
 
-from ecosistema import config
+from ecosistema import config, persistencia
 from ecosistema.mundo import Mundo
 from ecosistema.organismos import Organismo, Planta, Herbivoro, Carnivoro, ESPECIES
 from ecosistema.recursividad import tamano_colonia, colonias
@@ -151,6 +154,81 @@ class PruebasRecursividad(unittest.TestCase):
         for _ in range(10):
             mundo.ejecutar_turno()
         self.assertEqual(sum(colonias(mundo)), mundo.poblacion().get("Planta", 0))
+
+
+class PruebasPersistencia(unittest.TestCase):
+
+    def setUp(self):
+        self._carpeta = tempfile.TemporaryDirectory()
+        self.ruta = os.path.join(self._carpeta.name, "partida.json")
+
+    def tearDown(self):
+        self._carpeta.cleanup()
+
+    def test_guardar_y_cargar_da_el_mismo_mundo(self):
+        mundo = mundo_poblado(4)
+        for _ in range(8):
+            mundo.ejecutar_turno()
+        persistencia.guardar(mundo, self.ruta)
+        cargado = persistencia.cargar(self.ruta)
+        self.assertEqual(cargado.turno, mundo.turno)
+        self.assertEqual(str(cargado), str(mundo))
+        self.assertEqual([o.a_diccionario() for o in cargado.organismos],
+                         [o.a_diccionario() for o in mundo.organismos])
+
+    def test_la_partida_continua_exactamente_igual(self):
+        # Una partida sin interrupción vs. la misma partida guardada y cargada
+        original = mundo_poblado(11)
+        for _ in range(10):
+            original.ejecutar_turno()
+        persistencia.guardar(original, self.ruta)
+        cargada = persistencia.cargar(self.ruta)
+        for _ in range(10):
+            original.ejecutar_turno()
+            cargada.ejecutar_turno()
+            self.assertEqual(cargada.bitacora, original.bitacora)
+            self.assertEqual(str(cargada), str(original))
+
+    def test_archivo_inexistente(self):
+        with self.assertRaises(FileNotFoundError):
+            persistencia.cargar(self.ruta)
+
+    def test_json_danado(self):
+        with open(self.ruta, "w", encoding="utf-8") as archivo:
+            archivo.write("{ esto no es json")
+        with self.assertRaises(ValueError):
+            persistencia.cargar(self.ruta)
+
+    def _guardar_y_modificar(self, cambiar):
+        mundo = mundo_poblado(5)
+        persistencia.guardar(mundo, self.ruta)
+        with open(self.ruta, encoding="utf-8") as archivo:
+            datos = json.load(archivo)
+        cambiar(datos)
+        with open(self.ruta, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo)
+
+    def test_especie_desconocida(self):
+        self._guardar_y_modificar(lambda d: d["organismos"][0].update(especie="Dragon"))
+        with self.assertRaises(ValueError):
+            persistencia.cargar(self.ruta)
+
+    def test_dos_organismos_en_la_misma_celda(self):
+        def duplicar(datos):
+            primero, segundo = datos["organismos"][0], datos["organismos"][1]
+            segundo["fila"], segundo["columna"] = primero["fila"], primero["columna"]
+        self._guardar_y_modificar(duplicar)
+        with self.assertRaises(ValueError):
+            persistencia.cargar(self.ruta)
+
+    def test_falta_un_dato(self):
+        self._guardar_y_modificar(lambda d: d.pop("turno"))
+        with self.assertRaises(ValueError):
+            persistencia.cargar(self.ruta)
+
+    def test_edad_negativa(self):
+        with self.assertRaises(ValueError):
+            Planta(0, 0, edad=-1)
 
 
 if __name__ == "__main__":

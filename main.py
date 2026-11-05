@@ -1,13 +1,20 @@
 """
 Punto de entrada del proyecto.
 
-Por ahora corre la simulación por consola (Fase 3). Las pruebas de las
-Fases 1 y 2 siguen aquí: se pueden llamar desde el bloque de abajo.
+Por ahora corre la simulación por consola. Las pruebas de las Fases 1 y 2
+siguen aquí como funciones (prueba_fase1, prueba_fase2).
+
+Uso:
+    python main.py                        10 turnos, semilla 42
+    python main.py 30 7                   30 turnos, semilla 7
+    python main.py 10 --guardar           ... y guarda la partida al final
+    python main.py 10 --cargar            sigue 10 turnos desde la partida guardada
 """
 
+import argparse
 import sys
 
-from ecosistema import config
+from ecosistema import config, persistencia
 from ecosistema.mundo import Mundo
 from ecosistema.recursividad import colonias
 from ecosistema.organismos import Organismo, Planta, Herbivoro, Carnivoro, ESPECIES
@@ -95,10 +102,9 @@ def mostrar_poblacion(mundo):
         print(f"Colonias de plantas: {len(tamanos)} | la más grande: {tamanos[0]} plantas")
 
 
-def prueba_fase3(turnos=10, semilla=42):
-    print(f"=== Fase 3: simulación por consola ({turnos} turnos, semilla {semilla}) ===\n")
-    mundo = crear_mundo(semilla)
-    print("Turno 0")
+def simular(mundo, turnos):
+    """Corre la simulación por consola mostrando cada turno."""
+    print(f"Turno {mundo.turno}")
     print(mundo)
     mostrar_poblacion(mundo)
 
@@ -117,8 +123,39 @@ def prueba_fase3(turnos=10, semilla=42):
             break
 
 
+def leer_argumentos():
+    lector = argparse.ArgumentParser(description="Ecosistema Simulado por consola")
+    lector.add_argument("turnos", type=int, nargs="?", default=10,
+                        help="cuántos turnos simular (por defecto 10)")
+    lector.add_argument("semilla", type=int, nargs="?", default=42,
+                        help="semilla del azar para una partida nueva (por defecto 42)")
+    lector.add_argument("--guardar", nargs="?", const=persistencia.RUTA_POR_DEFECTO,
+                        metavar="RUTA", help="guardar la partida al terminar")
+    lector.add_argument("--cargar", nargs="?", const=persistencia.RUTA_POR_DEFECTO,
+                        metavar="RUTA", help="continuar una partida guardada")
+    return lector.parse_args()
+
+
+def main():
+    argumentos = leer_argumentos()
+
+    if argumentos.cargar:
+        try:
+            mundo = persistencia.cargar(argumentos.cargar)
+        except (FileNotFoundError, ValueError) as error:
+            print(f"No se pudo cargar la partida: {error}")
+            sys.exit(1)
+        print(f"=== Partida cargada de {argumentos.cargar} (turno {mundo.turno}) ===\n")
+    else:
+        mundo = crear_mundo(argumentos.semilla)
+        print(f"=== Partida nueva (semilla {argumentos.semilla}) ===\n")
+
+    simular(mundo, argumentos.turnos)
+
+    if argumentos.guardar:
+        persistencia.guardar(mundo, argumentos.guardar)
+        print(f"\nPartida guardada en {argumentos.guardar} (turno {mundo.turno})")
+
+
 if __name__ == "__main__":
-    # Uso: python main.py [turnos] [semilla]
-    turnos = int(sys.argv[1]) if len(sys.argv) > 1 else 10
-    semilla = int(sys.argv[2]) if len(sys.argv) > 2 else 42
-    prueba_fase3(turnos, semilla)
+    main()

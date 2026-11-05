@@ -20,15 +20,23 @@ class Organismo(ABC):
     SIMBOLO = "?"
     ORDEN_EN_TURNO = 0   # en qué fase del turno actúa la especie (sección 4.5)
 
-    def __init__(self, fila, columna, energia=None):
+    def __init__(self, fila, columna, energia=None, edad=0):
+        """
+        energia: si no se indica, usa la energía inicial de la especie.
+        edad: 0 para un organismo nuevo; otro valor solo al cargar una partida.
+        """
         self.fila = fila
         self.columna = columna
         if energia is None:
             energia = self.PARAMETROS["energia_inicial"]
         if energia <= 0:
             raise ValueError("Un organismo no puede nacer sin energía.")
+        if energia > self.PARAMETROS["energia_max"]:
+            raise ValueError("La energía no puede superar el máximo de la especie.")
+        if not isinstance(edad, int) or edad < 0:
+            raise ValueError("La edad debe ser un entero no negativo.")
         self._energia = energia
-        self._edad = 0
+        self._edad = edad
         self._vivo = True
 
     # ------------------------------------------------------------------
@@ -131,6 +139,17 @@ class Organismo(ABC):
 
     def morir(self):
         self._vivo = False
+
+    def a_diccionario(self):
+        """Estado completo del organismo, listo para guardarse en JSON (Fase 6)."""
+        return {
+            "especie": self.nombre,
+            "fila": self._fila,
+            "columna": self._columna,
+            "energia": self._energia,
+            "edad": self._edad,
+            "vivo": self._vivo,
+        }
 
     # ------------------------------------------------------------------
     # Ayudantes que usan las subclases (protegidos: no se llaman desde afuera)
