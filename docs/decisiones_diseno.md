@@ -82,11 +82,31 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
   que una que nunca se cerró (hay una prueba automática que lo comprueba). Si el
   archivo no existe o está dañado, se lanza un error claro en vez de seguir con
   datos vacíos.
-- **Interfaz (Fase 7):** pygame; primero cuadrados de colores, sprites al final.
-  La ventana se adapta a cualquier pantalla (tamaño y proporción), tomando como
-  referencia cómo lo resolvió Maze Run.
-- **Gráficos:** todos los personajes y figuras se dibujan con píxeles (pixel art),
-  sin imágenes externas.
+- **Interfaz (Fase 7):** pygame. La interfaz solo muestra el motor: llama a
+  `mundo.ejecutar_turno()` y dibuja la matriz; no decide nada de la simulación.
+  - **Ventana adaptable (idea de Maze Run):** ventana `RESIZABLE` y F11 para
+    pantalla completa. En cada cuadro se compara el tamaño de la pantalla y, si
+    cambió, se recalcula `celda = min(ancho // columnas, alto // filas)` y se
+    centra el grid (`interfaz/distribucion.py`). A diferencia de Maze Run, no hay
+    tope de 48 px, para aprovechar pantallas grandes. Si la pantalla es ancha, el
+    panel va al costado; si es alta, va arriba. El tamaño de letra se elige con
+    una búsqueda binaria para que todo el panel quepa.
+  - **Controles:** botones clicables y teclado (un diccionario tecla → acción, sin
+    cadena de `if/elif`): iniciar/pausar, velocidad de 0,5 a 15 turnos por
+    segundo, guardar, cargar, partida nueva, pantalla completa y salir.
+  - **Fin de partida:** cuando una especie se extingue se muestra la pantalla de
+    extinción con los turnos sobrevividos como puntaje.
+  - **Lección de Maze Run:** su chequeo de `VIDEORESIZE` comparaba con el estado
+    `"JUGANDO"`, que nunca existía (el estado real era `"JUEGO"`); funcionaba solo
+    gracias a un segundo chequeo de tamaño en cada cuadro. Aquí se usa solo ese
+    chequeo, sin código muerto.
+- **Gráficos:** todos los personajes se dibujan con píxeles (pixel art), sin
+  imágenes externas. Cada sprite es una lista de textos de 16 × 16 donde cada
+  letra es un color de la paleta (`interfaz/sprites.py`), y se escala con vecino
+  más cercano para que los píxeles queden nítidos. Las plantas tienen tres etapas:
+  brote (recién nacida), arbusto y corteza amarilla en flor (cuando ya puede
+  reproducirse). Las crías de los animales se dibujan más pequeñas. El texto se
+  dibuja sin suavizado para que combine con el estilo 8 bits.
 
 ## Estética — *Panta Rhei* (nombre provisional)
 

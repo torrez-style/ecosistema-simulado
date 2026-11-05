@@ -13,21 +13,17 @@ Uso, desde la carpeta del proyecto:
 import sys
 
 from ecosistema import config
-from ecosistema.mundo import Mundo
-from ecosistema.organismos import ESPECIES
+from ecosistema.partida import crear_mundo, especies_extintas
 
 TOPE_TURNOS = 150
 
 
 def duracion(semilla):
     """Turnos hasta la primera extinción (o TOPE_TURNOS) y qué especie cayó."""
-    mundo = Mundo(config.FILAS, config.COLUMNAS, semilla)
-    mundo.poblar_aleatorio({ESPECIES[nombre]: cantidad
-                            for nombre, cantidad in config.POBLACION_INICIAL.items()})
+    mundo = crear_mundo(semilla)
     for _ in range(TOPE_TURNOS):
         mundo.ejecutar_turno()
-        poblacion = mundo.poblacion()
-        extintas = [nombre for nombre in ESPECIES if poblacion.get(nombre, 0) == 0]
+        extintas = especies_extintas(mundo)
         if extintas:
             return mundo.turno, "+".join(extintas)
     return TOPE_TURNOS, None
