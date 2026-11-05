@@ -8,6 +8,7 @@ Controles (botones o teclado):
     ESPACIO  iniciar / pausar          G    guardar partida
     + / -    más o menos velocidad     C    cargar partida
     N        partida nueva             F11  pantalla completa
+    M        encender / apagar el sonido
     ESC      salir (o dejar la pantalla completa)
 
 Ventana adaptable (idea de Maze Run): la ventana es RESIZABLE; en cada
@@ -16,13 +17,15 @@ cuadro se compara su tamaño y, si cambió, se recalcula la distribución.
 
 import pygame
 
-from ecosistema import persistencia
+from ecosistema import config, persistencia
 from ecosistema.organismos import ESPECIES
 from ecosistema.partida import crear_mundo, especies_extintas, semilla_aleatoria
 from ecosistema.busqueda import ranking_por_energia
 from ecosistema.recursividad import colonias
 from interfaz import colores
 from interfaz.distribucion import calcular_distribucion
+from interfaz.musica import FRECUENCIA_MUESTREO
+from interfaz.sonido import Sonido
 from interfaz.sprites import ESCALA_CRIA, Sprites, etapa_de
 
 TITULO_VENTANA = "Panta Rhei — Ecosistema simulado"
@@ -97,6 +100,8 @@ class Boton:
 class Ventana:
 
     def __init__(self, mundo):
+        # El sonido se configura ANTES de pygame.init() para que use nuestra frecuencia
+        pygame.mixer.pre_init(FRECUENCIA_MUESTREO, -16, 2, 512)
         pygame.init()
         pygame.display.set_caption(TITULO_VENTANA)
         self._tamano_ventana = self._tamano_inicial()
@@ -143,7 +148,9 @@ class Ventana:
             pygame.K_n: self._nueva_partida,
             pygame.K_F11: self._alternar_pantalla_completa,
             pygame.K_ESCAPE: self._escape,
+            pygame.K_m: self._alternar_sonido,
         }
+        self._sonido = Sonido(config.POBLACION_INICIAL)
         self._actualizar_estadisticas()
 
     # ------------------------------------------------------------------
@@ -154,6 +161,7 @@ class Ventana:
             transcurrido = self._reloj.tick(FPS)
             self._procesar_eventos()
             self._avanzar_simulacion(transcurrido)
+            self._sonido.actualizar(self._poblacion, self._extintas, self._pausado)
 
             tamano = pygame.display.get_surface().get_size()
             if tamano != self._tamano_actual:
@@ -183,6 +191,7 @@ class Ventana:
         while self._acumulado >= intervalo and turnos < MAX_TURNOS_POR_CUADRO:
             self._mundo.ejecutar_turno()
             self._actualizar_estadisticas()
+            self._sonido.reaccionar(self._mundo.sucesos)
             self._acumulado -= intervalo
             turnos += 1
             if self._extintas:
@@ -206,6 +215,7 @@ class Ventana:
             self._avisar("La partida terminó: N para una nueva o C para cargar")
             return
         self._pausado = not self._pausado
+        self._sonido.efecto("pausa" if self._pausado else "reanudar")
 
     def _mas_rapido(self):
         self._indice_velocidad = min(self._indice_velocidad + 1, len(VELOCIDADES) - 1)
@@ -215,6 +225,7 @@ class Ventana:
 
     def _guardar(self):
         persistencia.guardar(self._mundo)
+        self._sonido.efecto("guardar")
         self._avisar(f"Partida guardada (turno {self._mundo.turno})")
 
     def _cargar(self):
@@ -222,16 +233,33 @@ class Ventana:
             self._mundo = persistencia.cargar()
         except (FileNotFoundError, ValueError) as error:
             self._avisar(f"No se pudo cargar: {error}")
+            self._sonido.efecto("error")
             return
         self._pausado = True
         self._actualizar_estadisticas()
+        self._sonido.reiniciar()
+        self._sonido.efecto("cargar")
         self._avisar(f"Partida cargada (turno {self._mundo.turno})")
 
     def _nueva_partida(self):
         self._mundo = crear_mundo(semilla_aleatoria())
         self._pausado = True
         self._actualizar_estadisticas()
+        self._sonido.reiniciar()
+        self._sonido.efecto("nueva")
         self._avisar(f"Partida nueva (semilla {self._mundo.semilla})")
+
+    def _alternar_sonido(self):
+        if not self._sonido.disponible:
+            self._avisar("Esta computadora no tiene sonido disponible")
+            return
+        self._sonido.alternar_silencio()
+        self._avisar("Sonido apagado" if self._sonido.silenciado else "Sonido encendido")
+
+    def _texto_sonido(self):
+        if not self._sonido.disponible:
+            return "Sonido: no disponible"
+        return "Sonido: apagado (M)" if self._sonido.silenciado else "Sonido: encendido (M)"
 
     def _alternar_pantalla_completa(self):
         if self._pantalla_completa:
@@ -358,10 +386,11 @@ class Ventana:
             ("normal", estado),
             ("chico", f"Velocidad: {velocidad_texto}"),
             ("chico", f"Semilla: {self._mundo.semilla}"),
+            ("chico", self._texto_sonido()),
             ("botones", self._botones[0:3]),
             ("botones", self._botones[3:6]),
             ("ayuda", "ESPACIO pausa   +/- velocidad"),
-            ("ayuda", "G guardar  C cargar  N nueva"),
+            ("ayuda", "G guardar  C cargar  N nueva  M sonido"),
             ("ayuda", "F11 pantalla completa  ESC salir"),
         ]
         if pygame.time.get_ticks() < self._mensaje_hasta:

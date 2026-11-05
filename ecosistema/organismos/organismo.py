@@ -170,7 +170,8 @@ class Organismo(ABC):
     def _registrar_nacimiento(self, mundo, cria):
         mundo.colocar(cria)
         mundo.registrar(f"{self.nombre} {self.posicion} se reprodujo: "
-                        f"cría en {cria.posicion} (padre queda con {self.energia})")
+                        f"cría en {cria.posicion} (padre queda con {self.energia})",
+                        "nacimiento", cria.nombre)
 
     def _comer(self, mundo, presa):
         """La presa muere, su celda queda libre y el depredador la ocupa (sección 4.2)."""
@@ -181,7 +182,8 @@ class Organismo(ABC):
         mundo.mover(self, fila, columna)
         self.ganar_energia(self.PARAMETROS["ganancia"])
         mundo.registrar(f"{self.nombre} {origen} se comió a {presa.nombre} "
-                        f"en {self.posicion} (energía {self.energia})")
+                        f"en {self.posicion} (energía {self.energia})",
+                        "comida", self.nombre)
 
     def _moverse_al_azar(self, mundo):
         """Va a una vecina libre al azar; si no hay ninguna, se queda quieto (FAQ P10)."""
@@ -193,7 +195,8 @@ class Organismo(ABC):
         """Paga su metabolismo; devuelve False si murió de hambre."""
         self.pagar_metabolismo()
         if not self.vivo:
-            mundo.registrar(f"{self.nombre} {self.posicion} murió de hambre")
+            mundo.registrar(f"{self.nombre} {self.posicion} murió de hambre",
+                            "muerte", self.nombre)
         return self.vivo
 
     # ------------------------------------------------------------------

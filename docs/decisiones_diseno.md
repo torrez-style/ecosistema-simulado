@@ -126,7 +126,25 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - Nadie controla a los animales: el que sobrevive es el ecosistema.
 - Paleta rojo-negro en bandas (ver `interfaz/ventana.py`); los organismos no usan rojo.
 - Pixel art: sprites como matrices 8×8 o 16×16 de índices de paleta.
-- Música 8-bit propia generada con numpy (capa opcional).
+- **Música 8 bits propia, generada con numpy** (capa opcional, no da puntos).
+  Es tenue, como un paisaje sonoro del bosque, y reacciona a lo que pasa:
+  - Se compone **compás por compás** (`interfaz/musica.py`): plantas = colchón de
+    onda triangular (más plantas, más lleno), guatusas = melodía de onda cuadrada
+    al 25 % (más guatusas, más notas), tigrillos = toques de ruido muy suaves.
+  - Escala **pentatónica mayor** en calma; si alguna especie baja de la mitad de
+    su población inicial, pasa a **pentatónica menor** y el tempo sube un poco.
+  - En pausa solo suena el colchón. Con la extinción suena una frase lenta que
+    baja y después el bosque queda en silencio.
+  - Cada compás se traslapa un segundo con el siguiente para que no haya cortes.
+  - Efectos suaves al final de cada turno (florecer, nacer, comer, morir) con una
+    espera mínima entre repeticiones, para que a alta velocidad no saturen.
+  - `Mundo` cuenta los sucesos de cada turno (`mundo.sucesos`) para que el
+    sonido no tenga que leer el texto de la bitácora.
+  - La música usa **su propio generador de azar**, nunca el del mundo: así
+    encender o apagar el sonido no cambia la simulación.
+  - No se copió ninguna canción: el "sonido a consola" viene de las ondas
+    (triangular, cuadrada y ruido), no de melodías con derechos de autor.
+  - Si la computadora no tiene sonido, el juego sigue funcionando en silencio.
 
 ## Pendiente de confirmar con los profes
 

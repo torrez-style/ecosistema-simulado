@@ -26,8 +26,9 @@ class Mundo:
         # Generador de azar de numpy: con la misma semilla, la misma corrida.
         self._semilla = semilla
         self._azar = np.random.default_rng(semilla)
-        # Lo que pasó en el último turno, en texto (para la consola)
+        # Lo que pasó en el último turno: en texto (consola) y contado (sonido)
         self._bitacora = []
+        self._sucesos = {}
 
     # ------------------------------------------------------------------
     # Propiedades
@@ -52,9 +53,21 @@ class Mundo:
     def bitacora(self):
         return list(self._bitacora)
 
-    def registrar(self, texto):
-        """Anota un suceso del turno actual en la bitácora."""
+    @property
+    def sucesos(self):
+        """
+        Cuántas veces pasó cada cosa en el último turno, por especie:
+        {("nacimiento", "Planta"): 3, ("comida", "Herbivoro"): 2, ...}
+        "comida" lo cuenta quien come; "muerte" es por hambre o por vejez.
+        """
+        return dict(self._sucesos)
+
+    def registrar(self, texto, suceso=None, especie=None):
+        """Anota un suceso del turno actual en la bitácora y, si se indica, lo cuenta."""
         self._bitacora.append(texto)
+        if suceso is not None:
+            clave = (suceso, especie)
+            self._sucesos[clave] = self._sucesos.get(clave, 0) + 1
 
     def poblacion(self):
         """Cantidad de organismos vivos por especie: {"Planta": 9, ...}."""
@@ -207,6 +220,7 @@ class Mundo:
         Nada de if/elif por especie: cada organismo hace lo suyo con actuar().
         """
         self._bitacora = []
+        self._sucesos = {}
 
         # 0. Lista fija de los vivos al inicio, ordenada por ORDEN_EN_TURNO
         #    (Plantas 1, Herbívoros 2, Carnívoros 3). sorted() es estable:
@@ -230,7 +244,7 @@ class Mundo:
                 if organismo.supera_edad_maxima():
                     organismo.morir()
                     self.registrar(f"{organismo.nombre} {organismo.posicion} murió de vieja "
-                                   f"(edad {organismo.edad})")
+                                   f"(edad {organismo.edad})", "muerte", organismo.nombre)
             if not organismo.vivo:
                 self.retirar(organismo)
 

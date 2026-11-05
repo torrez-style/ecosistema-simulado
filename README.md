@@ -27,12 +27,18 @@ python main.py --cargar                 # abre la ventana con la partida guardad
 | **Guardar** · `G` | guardar en `guardados/partida.json` |
 | **Cargar** · `C` | cargar la partida guardada |
 | **Nueva** · `N` | partida nueva con otra semilla |
+| `M` | encender o apagar el sonido |
 | `F11` | pantalla completa |
 | `ESC` | salir (o dejar la pantalla completa) |
 
 La ventana se adapta a cualquier pantalla: se puede agrandar, achicar o poner en
 pantalla completa, y el grid siempre se ve entero y centrado. La partida termina
 cuando una especie se extingue; el puntaje son los turnos que sobrevivió.
+
+La música es suave y cambia según lo que pasa: las plantas son el colchón de
+fondo, las guatusas la melodía y los tigrillos una percusión muy leve. Si una
+especie baja de la mitad de su población inicial, la música pasa de calma a
+tensión. Nacimientos, comidas y muertes tienen efectos de sonido suaves.
 
 ### Modo consola
 
@@ -73,7 +79,8 @@ ecosistema-simulado/
 │   ├── distribucion.py        # cómo se reparte la pantalla (adaptable)
 │   ├── sprites.py             # personajes en pixel art
 │   ├── colores.py             # paleta rojo-negro
-│   └── musica.py              # música 8 bits (pendiente, opcional)
+│   ├── musica.py              # genera la música 8 bits con numpy
+│   └── sonido.py              # la reproduce con pygame
 ├── herramientas/
 │   ├── probar_balance.py      # mide cuántos turnos dura el ecosistema
 │   └── demostraciones.py      # pruebas por consola de las Fases 1 y 2
@@ -101,7 +108,7 @@ ecosistema-simulado/
 - [x] Fase 6 — Guardar / cargar en JSON (la partida continúa exactamente igual)
 - [x] Fase 7 — Interfaz gráfica con pygame (ventana adaptable y pixel art)
 - [ ] Fase 8 — Documento de decisiones y defensa oral
-- [ ] Extra opcional: música 8 bits
+- [x] Extra: música 8 bits tenue y reactiva al ecosistema, con efectos de sonido
 
 ## Convenciones del curso
 
