@@ -247,7 +247,8 @@ class Ventana:
     # ------------------------------------------------------------------
     # Tamaño de la pantalla
     # ------------------------------------------------------------------
-    def _tamano_inicial(self):
+    @staticmethod
+    def _tamano_inicial():
         info = pygame.display.Info()
         if info.current_w > 0 and info.current_h > 0:
             return (int(info.current_w * PROPORCION_DE_LA_PANTALLA),
@@ -258,14 +259,15 @@ class Ventana:
         """Recalcula todo lo que depende del tamaño de la pantalla."""
         celda_anterior = self._distribucion.celda if self._distribucion else None
         self._tamano_actual = tamano
-        self._distribucion = Distribucion(
+        self._distribucion = Distribucion.calcular(
             tamano[0], tamano[1], self._mundo.filas, self._mundo.columnas)
         if self._distribucion.celda != celda_anterior:
             self._sprites.limpiar()
         self._fondo = self._crear_fondo(tamano)
         self._fondo_grid = self._crear_fondo_grid()
 
-    def _crear_fondo(self, tamano):
+    @staticmethod
+    def _crear_fondo(tamano):
         """Fondo rojo-negro en bandas horizontales (8 bits)."""
         ancho, alto = tamano
         fondo = pygame.Surface(tamano)
@@ -363,12 +365,14 @@ class Ventana:
             controles.append(("mensaje", self._mensaje))
         return informacion, controles
 
-    def _tamano_de(self, tipo, unidad):
+    @staticmethod
+    def _tamano_de(tipo, unidad):
         """Tamaño de letra de cada tipo de fila a partir de la unidad del panel."""
         proporcion = {"titulo": 2.0, "normal": 1.15, "especie": 1.15, "botones": 1.0}
         return max(10, int(unidad * proporcion.get(tipo, 0.85)))
 
-    def _espacio(self, unidad):
+    @staticmethod
+    def _espacio(unidad):
         return max(2, unidad // 4)
 
     def _medir(self, filas, unidad):

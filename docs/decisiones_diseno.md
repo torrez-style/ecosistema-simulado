@@ -39,9 +39,19 @@ Revisamos el código contra las guías y soluciones de clase (semanas 9 a 14).
 | Una clase por archivo | Todas las guías: "una clase por archivo y ninguna función suelta mezclada con una clase" | Cada clase en su propio módulo; las funciones en módulos aparte |
 
 Ajustes hechos al revisar: el ranking pasó de ordenamiento por inserción a la
-**burbuja** del curso; la matriz se crea con la forma vista en clase; se quitó
-`@classmethod`, `@staticmethod` y `@dataclass` (no se vieron en el curso); y
-las clases de la interfaz quedaron cada una en su archivo.
+**burbuja** del curso; la matriz se crea con la forma vista en clase; y las
+clases de la interfaz quedaron cada una en su archivo.
+
+Decoradores vistos en clase y dónde se usan:
+- `@property` / `@x.setter`: en todas las clases (encapsulamiento).
+- `@abstractmethod`: `Organismo.actuar()` y `Organismo.reproducirse()`.
+- `@classmethod` como **constructor alternativo**: `Mundo.desde_diccionario()`
+  (crea el mundo desde el archivo guardado), `EstadoMusical.desde_poblacion()` y
+  `Distribucion.calcular()`.
+- `@staticmethod` en los métodos de `Ventana` que no usan `self` (tamaño
+  inicial, fondo en bandas, tamaños de letra).
+- `@dataclass(frozen=True)` en `EstadoMusical` y `Distribucion`: clases que
+  solo guardan datos; `frozen=True` impide cambiarlos después de creados.
 
 Fuera del temario, pero decididos por el equipo y fáciles de explicar: `numpy`
 (azar con semilla y música), `pygame` (interfaz) y `json` (guardado).

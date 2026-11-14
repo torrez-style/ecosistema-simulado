@@ -1,43 +1,41 @@
 """Lo que la música necesita saber del ecosistema (una clase por archivo)."""
 
+from dataclasses import dataclass
+
 UMBRAL_TENSION = 0.5   # fracción de la población inicial
 
 
+@dataclass(frozen=True)
 class EstadoMusical:
     """
     Proporción de cada especie respecto a su población inicial (1.0 = igual
     que al inicio, 0.5 = la mitad) y si la simulación está en pausa.
+
+    @dataclass escribe solo el __init__ con estos cuatro atributos;
+    frozen=True impide cambiarlos después de crear el objeto.
     """
+    plantas: float
+    herbivoros: float
+    carnivoros: float
+    pausado: bool
 
-    def __init__(self, plantas, herbivoros, carnivoros, pausado):
-        for proporcion in (plantas, herbivoros, carnivoros):
-            if proporcion < 0:
-                raise ValueError("Una proporción de población no puede ser negativa.")
-        self._plantas = plantas
-        self._herbivoros = herbivoros
-        self._carnivoros = carnivoros
-        self._pausado = pausado
-
-    @property
-    def plantas(self):
-        return self._plantas
-
-    @property
-    def herbivoros(self):
-        return self._herbivoros
-
-    @property
-    def carnivoros(self):
-        return self._carnivoros
-
-    @property
-    def pausado(self):
-        return self._pausado
+    @classmethod
+    def desde_poblacion(cls, poblacion, poblacion_inicial, pausado):
+        """Constructor alternativo: a partir de {"Planta": 30, ...} y la población inicial."""
+        proporciones = {}
+        for especie in ("Planta", "Herbivoro", "Carnivoro"):
+            inicial = poblacion_inicial.get(especie, 0)
+            if inicial > 0:
+                proporciones[especie] = poblacion.get(especie, 0) / inicial
+            else:
+                proporciones[especie] = 0.0
+        return cls(proporciones["Planta"], proporciones["Herbivoro"],
+                   proporciones["Carnivoro"], pausado)
 
     @property
     def animo(self):
         """'tension' si alguna especie está por debajo de la mitad de su inicio."""
-        menor = min(self._plantas, self._herbivoros, self._carnivoros)
+        menor = min(self.plantas, self.herbivoros, self.carnivoros)
         if menor < UMBRAL_TENSION:
             return "tension"
         return "calma"

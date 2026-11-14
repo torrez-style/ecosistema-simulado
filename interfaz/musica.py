@@ -21,8 +21,6 @@ La música se compone compás por compás según lo que pasa en el ecosistema:
 
 import numpy as np
 
-from interfaz.estado_musical import EstadoMusical
-
 FRECUENCIA_MUESTREO = 22050
 
 # Todo se mezcla bajito: es un ambiente, no una canción de acción
@@ -43,19 +41,6 @@ PROGRESIONES = {
 TEMPOS = {"calma": 72, "tension": 84}   # pulsos por minuto
 CORCHEAS_POR_COMPAS = 8
 COLA = 1.0      # segundos que cada compás se traslapa con el siguiente
-
-
-def estado_musical(poblacion, poblacion_inicial, pausado):
-    """Convierte {"Planta": 30, ...} en un EstadoMusical con proporciones respecto al inicio."""
-    proporciones = {}
-    for especie in ("Planta", "Herbivoro", "Carnivoro"):
-        inicial = poblacion_inicial.get(especie, 0)
-        if inicial > 0:
-            proporciones[especie] = poblacion.get(especie, 0) / inicial
-        else:
-            proporciones[especie] = 0.0
-    return EstadoMusical(proporciones["Planta"], proporciones["Herbivoro"],
-                         proporciones["Carnivoro"], pausado)
 
 
 # ----------------------------------------------------------------------

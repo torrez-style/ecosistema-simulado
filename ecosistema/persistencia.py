@@ -42,26 +42,6 @@ def cargar(ruta=RUTA_POR_DEFECTO):
             raise ValueError(f"La partida guardada está dañada: {error}") from error
 
     try:
-        return _armar_mundo(datos)
+        return Mundo.desde_diccionario(datos, ESPECIES)
     except KeyError as error:
         raise ValueError(f"A la partida guardada le falta el dato {error}") from error
-
-
-def _armar_mundo(datos):
-    """
-    Reconstruye el mundo a partir del diccionario leído del archivo
-    (texto -> objetos, como el cargar() del cuaderno del fiado).
-    ESPECIES convierte el nombre guardado en su clase, sin if/elif por especie.
-    """
-    mundo = Mundo(datos["filas"], datos["columnas"], datos["semilla"])
-    mundo.restaurar(datos["turno"], datos["estado_azar"])
-    for guardado in datos["organismos"]:
-        if not guardado["vivo"]:
-            continue
-        clase = ESPECIES.get(guardado["especie"])
-        if clase is None:
-            raise ValueError(f"Especie desconocida: {guardado['especie']}")
-        organismo = clase(guardado["fila"], guardado["columna"],
-                          energia=guardado["energia"], edad=guardado["edad"])
-        mundo.colocar(organismo)   # valida bordes y celdas repetidas
-    return mundo

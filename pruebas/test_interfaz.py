@@ -29,7 +29,7 @@ class PruebasDistribucion(unittest.TestCase):
     def test_el_grid_siempre_cabe_completo(self):
         for ancho, alto in TAMANOS_DE_PANTALLA:
             with self.subTest(pantalla=(ancho, alto)):
-                d = Distribucion(ancho, alto, 20, 20)
+                d = Distribucion.calcular(ancho, alto, 20, 20)
                 self.assertGreaterEqual(d.grid.left, 0)
                 self.assertGreaterEqual(d.grid.top, 0)
                 self.assertLessEqual(d.grid.right, ancho)
@@ -38,21 +38,21 @@ class PruebasDistribucion(unittest.TestCase):
     def test_el_grid_no_tapa_el_panel(self):
         for ancho, alto in TAMANOS_DE_PANTALLA:
             with self.subTest(pantalla=(ancho, alto)):
-                d = Distribucion(ancho, alto, 20, 20)
+                d = Distribucion.calcular(ancho, alto, 20, 20)
                 self.assertFalse(d.grid.colliderect(d.panel))
 
     def test_celdas_cuadradas_y_grid_exacto(self):
-        d = Distribucion(1280, 800, 20, 20)
+        d = Distribucion.calcular(1280, 800, 20, 20)
         self.assertEqual(d.grid.w, d.celda * 20)
         self.assertEqual(d.grid.h, d.celda * 20)
 
     def test_panel_al_costado_si_la_pantalla_es_ancha(self):
-        self.assertTrue(Distribucion(1920, 1080, 20, 20).panel_al_costado)
-        self.assertFalse(Distribucion(700, 1000, 20, 20).panel_al_costado)
+        self.assertTrue(Distribucion.calcular(1920, 1080, 20, 20).panel_al_costado)
+        self.assertFalse(Distribucion.calcular(700, 1000, 20, 20).panel_al_costado)
 
     def test_pantalla_mas_grande_da_celdas_mas_grandes(self):
-        chica = Distribucion(1280, 720, 20, 20).celda
-        grande = Distribucion(3840, 2160, 20, 20).celda
+        chica = Distribucion.calcular(1280, 720, 20, 20).celda
+        grande = Distribucion.calcular(3840, 2160, 20, 20).celda
         self.assertGreater(grande, chica)
 
 
@@ -83,7 +83,7 @@ class PruebasMusica(unittest.TestCase):
         self.assertEqual(pocas.animo, "tension")
 
     def test_estado_musical_usa_proporciones(self):
-        estado = musica.estado_musical({"Planta": 30, "Herbivoro": 4},
+        estado = EstadoMusical.desde_poblacion({"Planta": 30, "Herbivoro": 4},
                                        {"Planta": 15, "Herbivoro": 8, "Carnivoro": 3}, False)
         self.assertEqual((estado.plantas, estado.herbivoros, estado.carnivoros), (2.0, 0.5, 0.0))
 

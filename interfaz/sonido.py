@@ -10,6 +10,7 @@ import pygame
 
 from interfaz import musica
 from interfaz.compositor import Compositor
+from interfaz.estado_musical import EstadoMusical
 
 # Suceso del turno -> efecto. Excepción: cuando "nace" una planta, florece.
 EFECTO_POR_SUCESO = {"nacimiento": "nacimiento", "comida": "comida", "muerte": "muerte"}
@@ -78,7 +79,7 @@ class Sonido:
             return
         self._extincion_sonada = False
 
-        estado = musica.estado_musical(poblacion, self._poblacion_inicial, pausado)
+        estado = EstadoMusical.desde_poblacion(poblacion, self._poblacion_inicial, pausado)
         self._reproducir_musica(self._compositor.siguiente(estado))
 
     def _reproducir_musica(self, onda):
