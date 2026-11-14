@@ -20,7 +20,8 @@ class Mundo:
             raise ValueError("El grid debe tener al menos una fila y una columna.")
         self._filas = filas
         self._columnas = columnas
-        self._grid = [[None for _ in range(columnas)] for _ in range(filas)]
+        # Una fila nueva en cada vuelta del for (no [[None] * c] * f, que repite la misma fila)
+        self._grid = [[None] * columnas for _ in range(filas)]
         self._organismos = []
         self._turno = 0
         # Generador de azar de numpy: con la misma semilla, la misma corrida.
@@ -101,29 +102,15 @@ class Mundo:
             "organismos": [organismo.a_diccionario() for organismo in self._organismos],
         }
 
-    @classmethod
-    def desde_diccionario(cls, datos, especies):
+    def restaurar(self, turno, estado_azar):
         """
-        Reconstruye un mundo guardado con a_diccionario().
-        especies: diccionario {"Planta": Planta, ...} para crear cada organismo
-        sin un if/elif por especie. Lanza ValueError si los datos no son válidos.
+        Al cargar una partida: vuelve al turno guardado y deja el generador de
+        azar exactamente donde estaba. Lanza ValueError si el turno no es válido.
         """
-        mundo = cls(datos["filas"], datos["columnas"], datos["semilla"])
-        if not isinstance(datos["turno"], int) or datos["turno"] < 0:
+        if not isinstance(turno, int) or turno < 0:
             raise ValueError("El turno guardado no es válido.")
-        mundo._turno = datos["turno"]
-        mundo._azar.bit_generator.state = datos["estado_azar"]
-
-        for guardado in datos["organismos"]:
-            if not guardado["vivo"]:
-                continue
-            clase = especies.get(guardado["especie"])
-            if clase is None:
-                raise ValueError(f"Especie desconocida: {guardado['especie']}")
-            organismo = clase(guardado["fila"], guardado["columna"],
-                              energia=guardado["energia"], edad=guardado["edad"])
-            mundo.colocar(organismo)   # valida bordes y celdas repetidas
-        return mundo
+        self._turno = turno
+        self._azar.bit_generator.state = estado_azar
 
     # ------------------------------------------------------------------
     # Consultas sobre el grid

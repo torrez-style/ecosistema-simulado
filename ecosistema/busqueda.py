@@ -3,7 +3,7 @@ Fase 4 — Búsqueda y ordenamiento integrados a la simulación.
 
 - presa_mas_cercana(): búsqueda lineal del mínimo. La usan Herbivoro.actuar()
   y Carnivoro.actuar() para decidir a quién comer (FAQ P11).
-- ranking_por_energia(): ordenamiento por inserción. El top 3 se muestra al
+- ranking_por_energia(): algoritmo de la burbuja. El top 3 se muestra al
   final de cada turno en la ventana y en la consola.
 """
 
@@ -37,24 +37,29 @@ def presa_mas_cercana(mundo, organismo, clase_presa):
 
 def ranking_por_energia(organismos, cantidad=None):
     """
-    Ordenamiento por inserción, de mayor a menor energía.
+    Algoritmo de la burbuja (versión 2, con la bandera hubo_intercambio),
+    de mayor a menor energía, igual al visto en clase (Semana 11).
 
-    Se recorre la lista y cada organismo se inserta en su lugar dentro de la
-    parte que ya está ordenada: se corre hacia la izquierda mientras el de al
-    lado tenga MENOS energía. Es estable: con la misma energía se conserva el
-    orden original. No modifica la lista que recibe.
+    - Ordena una COPIA (organismos.copy()): como sorted(), no cambia la lista
+      original. Ojo: copia = organismos NO sería una copia, solo otra etiqueta.
+    - Compara el atributo energia de dos vecinos; si el de la izquierda tiene
+      MENOS, los intercambia. El intercambio mueve el organismo completo.
+    - Si en una pasada no hubo intercambios, la lista ya está ordenada y se detiene.
+    - Es estable: con la misma energía se conserva el orden original.
 
     cantidad: si se indica, devuelve solo los primeros (ej. el top 3).
     Se muestra al final de cada turno en la ventana y en la consola.
     """
-    ordenados = list(organismos)
-    for i in range(1, len(ordenados)):
-        actual = ordenados[i]
-        j = i - 1
-        while j >= 0 and ordenados[j].energia < actual.energia:
-            ordenados[j + 1] = ordenados[j]   # correr el de menos energía a la derecha
-            j -= 1
-        ordenados[j + 1] = actual
+    ordenados = organismos.copy()
+    n = len(ordenados)
+    for i in range(n - 1):                      # cada vuelta es una pasada
+        hubo_intercambio = False
+        for j in range(n - 1 - i):              # los últimos i ya están en su lugar
+            if ordenados[j].energia < ordenados[j + 1].energia:
+                ordenados[j], ordenados[j + 1] = ordenados[j + 1], ordenados[j]
+                hubo_intercambio = True
+        if not hubo_intercambio:
+            break
     if cantidad is not None:
         return ordenados[:cantidad]
     return ordenados

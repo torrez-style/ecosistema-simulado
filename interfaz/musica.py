@@ -19,9 +19,9 @@ La música se compone compás por compás según lo que pasa en el ecosistema:
     En pausa solo suena el colchón: el bosque "respira".
 """
 
-from dataclasses import dataclass
-
 import numpy as np
+
+from interfaz.estado_musical import EstadoMusical
 
 FRECUENCIA_MUESTREO = 22050
 
@@ -41,33 +41,21 @@ PROGRESIONES = {
     "tension": (48, 44, 41, 43),    # Do, La bemol, Fa, Sol
 }
 TEMPOS = {"calma": 72, "tension": 84}   # pulsos por minuto
-UMBRAL_TENSION = 0.5                    # fracción de la población inicial
 CORCHEAS_POR_COMPAS = 8
 COLA = 1.0      # segundos que cada compás se traslapa con el siguiente
 
 
-@dataclass(frozen=True)
-class EstadoMusical:
-    """Lo que la música necesita saber del ecosistema."""
-    plantas: float       # población / población inicial
-    herbivoros: float
-    carnivoros: float
-    pausado: bool
-
-
 def estado_musical(poblacion, poblacion_inicial, pausado):
-    """Convierte {"Planta": 30, ...} en proporciones respecto al inicio."""
-    def proporcion(especie):
+    """Convierte {"Planta": 30, ...} en un EstadoMusical con proporciones respecto al inicio."""
+    proporciones = {}
+    for especie in ("Planta", "Herbivoro", "Carnivoro"):
         inicial = poblacion_inicial.get(especie, 0)
-        return poblacion.get(especie, 0) / inicial if inicial else 0.0
-    return EstadoMusical(proporcion("Planta"), proporcion("Herbivoro"),
-                         proporcion("Carnivoro"), pausado)
-
-
-def animo(estado):
-    """'tension' si alguna especie está por debajo de la mitad de su inicio."""
-    menor = min(estado.plantas, estado.herbivoros, estado.carnivoros)
-    return "tension" if menor < UMBRAL_TENSION else "calma"
+        if inicial > 0:
+            proporciones[especie] = poblacion.get(especie, 0) / inicial
+        else:
+            proporciones[especie] = 0.0
+    return EstadoMusical(proporciones["Planta"], proporciones["Herbivoro"],
+                         proporciones["Carnivoro"], pausado)
 
 
 # ----------------------------------------------------------------------
@@ -138,7 +126,7 @@ def nota(onda, volumen, ataque=0.01, liberacion=0.05, decaimiento=None):
     return onda * envolvente(len(onda), ataque, liberacion, decaimiento) * volumen
 
 
-def _sumar(mezcla, sonido, inicio):
+def sumar_en(mezcla, sonido, inicio):
     """Suma `sonido` dentro de `mezcla` a partir de la muestra `inicio` (recorta lo que sobra)."""
     fin = min(len(mezcla), inicio + len(sonido))
     if inicio < fin:
@@ -158,7 +146,7 @@ def componer_compas(estado, numero_compas, azar):
     Devuelve (onda, largo): la onda dura un poco más que el compás (COLA
     segundos extra) para fundirse con el siguiente; `largo` es el compás exacto.
     """
-    modo = animo(estado)
+    modo = estado.animo
     duracion = 4 * 60 / TEMPOS[modo]
     largo = _muestras(duracion)
     mezcla = np.zeros(largo + _muestras(COLA))
@@ -168,10 +156,10 @@ def componer_compas(estado, numero_compas, azar):
     # apaga durante la cola, mientras entra el colchón del compás siguiente.
     volumen = VOLUMEN_COLCHON * (0.5 + 0.5 * min(1.0, estado.plantas))
     sostenido = duracion + COLA * 0.9
-    _sumar(mezcla, nota(onda_triangular(raiz, sostenido), volumen,
+    sumar_en(mezcla, nota(onda_triangular(raiz, sostenido), volumen,
                         ataque=COLA * 0.9, liberacion=COLA * 0.9), 0)
     if estado.plantas >= 1:   # con muchas plantas se suma la quinta: más lleno
-        _sumar(mezcla, nota(onda_triangular(raiz + 7, sostenido), volumen * 0.5,
+        sumar_en(mezcla, nota(onda_triangular(raiz + 7, sostenido), volumen * 0.5,
                             ataque=COLA, liberacion=COLA * 0.9), 0)
 
     if estado.pausado:
@@ -189,7 +177,7 @@ def componer_compas(estado, numero_compas, azar):
             indice = int(np.clip(indice + azar.integers(-2, 3), 0, len(notas) - 1))
             sonido = nota(onda_cuadrada(notas[indice], corchea * 1.8), VOLUMEN_MELODIA,
                           ataque=0.01, liberacion=0.12, decaimiento=0.35)
-            _sumar(mezcla, sonido, int(posicion * corchea * FRECUENCIA_MUESTREO))
+            sumar_en(mezcla, sonido, int(posicion * corchea * FRECUENCIA_MUESTREO))
 
     # Percusión: los tigrillos. Toques muy suaves en los tiempos del compás.
     golpes = int(np.clip(round(estado.carnivoros * 2), 0, 4))
@@ -197,39 +185,8 @@ def componer_compas(estado, numero_compas, azar):
         for tiempo in sorted(azar.choice(4, golpes, replace=False)):
             sonido = nota(ruido(0.08, azar), VOLUMEN_PERCUSION,
                           ataque=0.002, liberacion=0.02, decaimiento=0.025)
-            _sumar(mezcla, sonido, int(tiempo * 2 * corchea * FRECUENCIA_MUESTREO))
+            sumar_en(mezcla, sonido, int(tiempo * 2 * corchea * FRECUENCIA_MUESTREO))
     return mezcla, largo
-
-
-class Compositor:
-    """
-    Entrega los compases uno tras otro, sumando la cola del anterior al
-    inicio del siguiente para que la música no se corte entre compases.
-    """
-
-    def __init__(self, azar):
-        self._azar = azar
-        self._compas = 0
-        self._cola = np.zeros(0)
-
-    def reiniciar(self):
-        self._compas = 0
-        self._cola = np.zeros(0)
-
-    def siguiente(self, estado):
-        onda, largo = componer_compas(estado, self._compas, self._azar)
-        _sumar(onda, self._cola, 0)
-        self._cola = onda[largo:].copy()
-        self._compas += 1
-        return onda[:largo]
-
-    def final(self, onda):
-        """Termina con `onda` (ej. la frase de extinción), fundida con la última cola."""
-        resultado = np.zeros(max(len(onda), len(self._cola)))
-        _sumar(resultado, onda, 0)
-        _sumar(resultado, self._cola, 0)
-        self._cola = np.zeros(0)
-        return resultado
 
 
 def frase_extincion():
@@ -260,7 +217,7 @@ def efecto_comida():
     tono = _arpegio((67, 62), 0.05, onda_cuadrada, VOLUMEN_EFECTOS * 0.8)
     golpe = nota(ruido(0.04, np.random.default_rng(0)), VOLUMEN_EFECTOS * 0.4,
                  ataque=0.002, liberacion=0.02)
-    _sumar(tono, golpe, 0)
+    sumar_en(tono, golpe, 0)
     return tono
 
 

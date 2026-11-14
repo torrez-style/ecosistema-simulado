@@ -97,7 +97,7 @@ classDiagram
         +retirar(organismo)
         +ejecutar_turno()
         +a_diccionario() dict
-        +desde_diccionario(datos, especies)$ Mundo
+        +restaurar(turno, estado_azar)
         #_validar_destino(fila, columna)
     }
 

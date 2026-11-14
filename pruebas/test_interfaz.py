@@ -13,8 +13,10 @@ import interfaz  # noqa: F401  (oculta el saludo de pygame)
 from ecosistema.mundo import Mundo
 from ecosistema.organismos import Planta, Herbivoro
 from interfaz import musica
-from interfaz.distribucion import calcular_distribucion
-from interfaz.sprites import DIBUJOS, PALETA, etapa_de
+from interfaz.compositor import Compositor
+from interfaz.estado_musical import EstadoMusical
+from interfaz.distribucion import Distribucion
+from interfaz.pixel_art import DIBUJOS, PALETA, etapa_de
 
 TAMANOS_DE_PANTALLA = [
     (1920, 1080), (1366, 768), (1280, 800), (900, 900),
@@ -27,7 +29,7 @@ class PruebasDistribucion(unittest.TestCase):
     def test_el_grid_siempre_cabe_completo(self):
         for ancho, alto in TAMANOS_DE_PANTALLA:
             with self.subTest(pantalla=(ancho, alto)):
-                d = calcular_distribucion(ancho, alto, 20, 20)
+                d = Distribucion(ancho, alto, 20, 20)
                 self.assertGreaterEqual(d.grid.left, 0)
                 self.assertGreaterEqual(d.grid.top, 0)
                 self.assertLessEqual(d.grid.right, ancho)
@@ -36,21 +38,21 @@ class PruebasDistribucion(unittest.TestCase):
     def test_el_grid_no_tapa_el_panel(self):
         for ancho, alto in TAMANOS_DE_PANTALLA:
             with self.subTest(pantalla=(ancho, alto)):
-                d = calcular_distribucion(ancho, alto, 20, 20)
+                d = Distribucion(ancho, alto, 20, 20)
                 self.assertFalse(d.grid.colliderect(d.panel))
 
     def test_celdas_cuadradas_y_grid_exacto(self):
-        d = calcular_distribucion(1280, 800, 20, 20)
+        d = Distribucion(1280, 800, 20, 20)
         self.assertEqual(d.grid.w, d.celda * 20)
         self.assertEqual(d.grid.h, d.celda * 20)
 
     def test_panel_al_costado_si_la_pantalla_es_ancha(self):
-        self.assertTrue(calcular_distribucion(1920, 1080, 20, 20).panel_al_costado)
-        self.assertFalse(calcular_distribucion(700, 1000, 20, 20).panel_al_costado)
+        self.assertTrue(Distribucion(1920, 1080, 20, 20).panel_al_costado)
+        self.assertFalse(Distribucion(700, 1000, 20, 20).panel_al_costado)
 
     def test_pantalla_mas_grande_da_celdas_mas_grandes(self):
-        chica = calcular_distribucion(1280, 720, 20, 20).celda
-        grande = calcular_distribucion(3840, 2160, 20, 20).celda
+        chica = Distribucion(1280, 720, 20, 20).celda
+        grande = Distribucion(3840, 2160, 20, 20).celda
         self.assertGreater(grande, chica)
 
 
@@ -73,12 +75,12 @@ class PruebasSprites(unittest.TestCase):
 
 class PruebasMusica(unittest.TestCase):
 
-    SANO = musica.EstadoMusical(plantas=3.0, herbivoros=1.2, carnivoros=1.3, pausado=False)
+    SANO = EstadoMusical(plantas=3.0, herbivoros=1.2, carnivoros=1.3, pausado=False)
 
     def test_animo_cambia_si_una_especie_baja_de_la_mitad(self):
-        self.assertEqual(musica.animo(self.SANO), "calma")
-        pocas = musica.EstadoMusical(plantas=3.0, herbivoros=0.3, carnivoros=1.0, pausado=False)
-        self.assertEqual(musica.animo(pocas), "tension")
+        self.assertEqual(self.SANO.animo, "calma")
+        pocas = EstadoMusical(plantas=3.0, herbivoros=0.3, carnivoros=1.0, pausado=False)
+        self.assertEqual(pocas.animo, "tension")
 
     def test_estado_musical_usa_proporciones(self):
         estado = musica.estado_musical({"Planta": 30, "Herbivoro": 4},
@@ -86,7 +88,7 @@ class PruebasMusica(unittest.TestCase):
         self.assertEqual((estado.plantas, estado.herbivoros, estado.carnivoros), (2.0, 0.5, 0.0))
 
     def test_es_tenue(self):
-        compositor = musica.Compositor(np.random.default_rng(1))
+        compositor = Compositor(np.random.default_rng(1))
         onda = np.concatenate([compositor.siguiente(self.SANO) for _ in range(8)])
         self.assertLess(np.abs(onda).max(), 0.5)
         for nombre, crear in musica.EFECTOS.items():
@@ -94,7 +96,7 @@ class PruebasMusica(unittest.TestCase):
                 self.assertLess(np.abs(crear()).max(), 0.5)
 
     def test_no_se_corta_entre_compases(self):
-        compositor = musica.Compositor(np.random.default_rng(2))
+        compositor = Compositor(np.random.default_rng(2))
         onda = np.concatenate([compositor.siguiente(self.SANO) for _ in range(4)])
         ventana = musica.FRECUENCIA_MUESTREO // 10
         inicio = musica.FRECUENCIA_MUESTREO * 3   # después de que entra el primer colchón
@@ -103,14 +105,14 @@ class PruebasMusica(unittest.TestCase):
         self.assertGreater(min(volumenes), 0.03)
 
     def test_en_pausa_solo_suena_el_colchon(self):
-        pausado = musica.EstadoMusical(3.0, 1.2, 1.3, pausado=True)
+        pausado = EstadoMusical(3.0, 1.2, 1.3, pausado=True)
         con_animales, _ = musica.componer_compas(self.SANO, 0, np.random.default_rng(5))
         solo_colchon, _ = musica.componer_compas(pausado, 0, np.random.default_rng(5))
         self.assertGreater(np.abs(con_animales - solo_colchon).max(), 0.01)
 
     def test_sin_guatusas_no_hay_melodia(self):
-        sin = musica.EstadoMusical(3.0, 0.0, 0.0, pausado=False)
-        pausado = musica.EstadoMusical(3.0, 0.0, 0.0, pausado=True)
+        sin = EstadoMusical(3.0, 0.0, 0.0, pausado=False)
+        pausado = EstadoMusical(3.0, 0.0, 0.0, pausado=True)
         a, _ = musica.componer_compas(sin, 0, np.random.default_rng(5))
         b, _ = musica.componer_compas(pausado, 0, np.random.default_rng(5))
         self.assertTrue(np.allclose(a, b))

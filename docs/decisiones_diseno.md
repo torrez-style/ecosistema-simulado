@@ -22,6 +22,30 @@ en el documento breve de la entrega.
 - **Bitácora:** `Mundo` guarda en una lista de texto lo que pasó en el turno,
   para mostrarlo en consola (no es un sistema de eventos).
 
+## Relación con el material del curso
+
+Revisamos el código contra las guías y soluciones de clase (semanas 9 a 14).
+
+| Tema del curso | Material de clase | Dónde está en el proyecto |
+|---|---|---|
+| Matriz de objetos (5.4.9) | *Salón de pupitres*, *Batalla naval*: `[[None] * columnas for _ in range(filas)]`, `None` = casilla vacía | `Mundo._grid`, con `colocar`, `mover`, `retirar` (incluir / mover / eliminar) |
+| Búsqueda secuencial (5.4.11, 5.4.14) | *Pulpería* y *Feria*: `buscar_mas_barato()` recorre y guarda el mejor | `presa_mas_cercana()`: mismo patrón, guarda la presa más cercana |
+| Burbuja (5.4.13) | *Ordenamiento y burbuja*: versión 2 con `hubo_intercambio`, con objetos comparando un atributo, sobre una copia | `ranking_por_energia()` |
+| `sorted()` con `key` y `lambda` | *Ordenamiento*, pasos 11 a 13 | `Mundo.ejecutar_turno()` ordena por `ORDEN_EN_TURNO` |
+| Referencias (5.5) | `copy()` copia las flechas, no los objetos; la trampa de `[[None] * c] * f`; `is None` | `Mundo.organismos` devuelve una copia de la lista; `retirar()` usa `is` para identidad |
+| Archivos (5.6) | *El cuaderno del fiado*: `with open(..., encoding="utf-8")`, modos `"r"`/`"w"`, `a_linea()` convierte objeto → texto, `cargar()` texto → objetos, `FileNotFoundError` con `"r"` | `persistencia.py`: `a_diccionario()` es nuestro `a_linea()`, y se guarda en JSON (recomendado por la guía del proyecto) |
+| Recursividad (5.7) | *La fila*: caso base + caso recursivo que se acerca al base, límite de ~1000 llamadas; "un laberinto es naturalmente recursivo" | `tamano_colonia()`: dos casos base, profundidad máxima 400 |
+| Herencia, abstracción, polimorfismo | Tarea 2, Laboratorios 1 y 2 | `Organismo` (ABC) → `Planta`, `Herbivoro`, `Carnivoro` |
+| Una clase por archivo | Todas las guías: "una clase por archivo y ninguna función suelta mezclada con una clase" | Cada clase en su propio módulo; las funciones en módulos aparte |
+
+Ajustes hechos al revisar: el ranking pasó de ordenamiento por inserción a la
+**burbuja** del curso; la matriz se crea con la forma vista en clase; se quitó
+`@classmethod`, `@staticmethod` y `@dataclass` (no se vieron en el curso); y
+las clases de la interfaz quedaron cada una en su archivo.
+
+Fuera del temario, pero decididos por el equipo y fáciles de explicar: `numpy`
+(azar con semilla y música), `pygame` (interfaz) y `json` (guardado).
+
 ## Ajuste de parámetros (sección 4: "estable durante varias decenas de turnos")
 
 **Cambios respecto a la tabla de referencia (solo dos; ninguna mecánica cambia):**
@@ -74,11 +98,11 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - **Búsqueda y ordenamiento (Fase 4):**
   - `presa_mas_cercana()`: búsqueda lineal del mínimo entre las 8 vecinas,
     usada dentro de `actuar()` para decidir a quién comer.
-  - `ranking_por_energia()`: ordenamiento por inserción escrito a mano (estable,
-    de mayor a menor energía). El top 3 se muestra al final de cada turno en la
-    ventana y en la consola. Se escribió a mano en vez de usar `sorted()` para
-    poder explicar el algoritmo; una prueba automática comprueba que da el mismo
-    resultado que `sorted()`.
+  - `ranking_por_energia()`: **algoritmo de la burbuja** visto en clase
+    (versión 2, con la bandera `hubo_intercambio`), de mayor a menor energía,
+    sobre una copia de la lista (`.copy()`) para no cambiar la original. El top 3
+    se muestra al final de cada turno en la ventana y en la consola. Una prueba
+    automática comprueba que da el mismo resultado que `sorted()`.
   - Además, `Mundo` ordena la lista de cada turno por `ORDEN_EN_TURNO`.
 - **Recursividad (Fase 5):** flood-fill de colonias de plantas conectadas, escrito
   por nosotros (sin scipy).

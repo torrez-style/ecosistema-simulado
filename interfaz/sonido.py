@@ -9,6 +9,7 @@ import numpy as np
 import pygame
 
 from interfaz import musica
+from interfaz.compositor import Compositor
 
 # Suceso del turno -> efecto. Excepción: cuando "nace" una planta, florece.
 EFECTO_POR_SUCESO = {"nacimiento": "nacimiento", "comida": "comida", "muerte": "muerte"}
@@ -27,7 +28,7 @@ class Sonido:
         self._extincion_sonada = False
         self._ultimo_efecto = {}
         # Azar propio: la música NUNCA usa el azar del mundo, así no cambia la simulación
-        self._compositor = musica.Compositor(np.random.default_rng())
+        self._compositor = Compositor(np.random.default_rng())
 
         configuracion = pygame.mixer.get_init()
         self._disponible = configuracion is not None

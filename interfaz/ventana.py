@@ -24,10 +24,13 @@ from ecosistema.partida import crear_mundo, especies_extintas, semilla_aleatoria
 from ecosistema.busqueda import ranking_por_energia
 from ecosistema.recursividad import colonias
 from interfaz import colores
-from interfaz.distribucion import calcular_distribucion
+from interfaz.boton import Boton
+from interfaz.distribucion import Distribucion
 from interfaz.musica import FRECUENCIA_MUESTREO
 from interfaz.sonido import Sonido
-from interfaz.sprites import ESCALA_CRIA, Sprites, etapa_de
+from interfaz.pixel_art import ESCALA_CRIA, etapa_de
+from interfaz.sprites import Sprites
+from interfaz.texto import Texto
 
 TITULO_VENTANA = "Panta Rhei — Ecosistema simulado"
 NOMBRES = {"Planta": "Plantas", "Herbivoro": "Herbívoros", "Carnivoro": "Carnívoros"}
@@ -41,62 +44,6 @@ TAMANO_POR_DEFECTO = (1100, 720)
 PROPORCION_DE_LA_PANTALLA = 0.85      # la ventana abre al 85 % del monitor
 DURACION_MENSAJE = 3000               # milisegundos
 MAX_TURNOS_POR_CUADRO = 3
-
-
-class Texto:
-    """
-    Texto pixelado: se dibuja SIN suavizado (idea de Maze Run), así los bordes
-    quedan en escalón como en los juegos de 8 bits. El tamaño de letra se elige
-    según el espacio disponible.
-    """
-
-    def __init__(self):
-        self._fuentes = {}
-        self._cache = {}
-
-    def _fuente(self, tamano):
-        if tamano not in self._fuentes:
-            self._fuentes[tamano] = pygame.font.Font(None, tamano)
-        return self._fuentes[tamano]
-
-    def medir(self, texto, tamano):
-        """(ancho, alto) en píxeles, sin dibujar nada."""
-        return self._fuente(tamano).size(texto)
-
-    def render(self, texto, tamano, color):
-        clave = (texto, tamano, color)
-        if clave not in self._cache:
-            if len(self._cache) > 500:
-                self._cache.clear()
-            self._cache[clave] = self._fuente(tamano).render(texto, False, color)
-        return self._cache[clave]
-
-
-class Boton:
-    """Botón clicable. La etiqueta puede ser un texto o una función que lo devuelve."""
-
-    def __init__(self, etiqueta, accion):
-        self._etiqueta = etiqueta
-        self._accion = accion
-        self._rect = pygame.Rect(0, 0, 0, 0)
-
-    @property
-    def etiqueta(self):
-        return self._etiqueta() if callable(self._etiqueta) else self._etiqueta
-
-    @property
-    def rect(self):
-        return self._rect.copy()
-
-    def ubicar(self, rect):
-        self._rect = pygame.Rect(rect)
-
-    def contiene(self, punto):
-        return self._rect.collidepoint(punto)
-
-    def pulsar(self):
-        self._accion()
-
 
 class Ventana:
 
@@ -300,8 +247,7 @@ class Ventana:
     # ------------------------------------------------------------------
     # Tamaño de la pantalla
     # ------------------------------------------------------------------
-    @staticmethod
-    def _tamano_inicial():
+    def _tamano_inicial(self):
         info = pygame.display.Info()
         if info.current_w > 0 and info.current_h > 0:
             return (int(info.current_w * PROPORCION_DE_LA_PANTALLA),
@@ -312,15 +258,14 @@ class Ventana:
         """Recalcula todo lo que depende del tamaño de la pantalla."""
         celda_anterior = self._distribucion.celda if self._distribucion else None
         self._tamano_actual = tamano
-        self._distribucion = calcular_distribucion(
+        self._distribucion = Distribucion(
             tamano[0], tamano[1], self._mundo.filas, self._mundo.columnas)
         if self._distribucion.celda != celda_anterior:
             self._sprites.limpiar()
         self._fondo = self._crear_fondo(tamano)
         self._fondo_grid = self._crear_fondo_grid()
 
-    @staticmethod
-    def _crear_fondo(tamano):
+    def _crear_fondo(self, tamano):
         """Fondo rojo-negro en bandas horizontales (8 bits)."""
         ancho, alto = tamano
         fondo = pygame.Surface(tamano)
@@ -418,14 +363,12 @@ class Ventana:
             controles.append(("mensaje", self._mensaje))
         return informacion, controles
 
-    @staticmethod
-    def _tamano_de(tipo, unidad):
+    def _tamano_de(self, tipo, unidad):
         """Tamaño de letra de cada tipo de fila a partir de la unidad del panel."""
         proporcion = {"titulo": 2.0, "normal": 1.15, "especie": 1.15, "botones": 1.0}
         return max(10, int(unidad * proporcion.get(tipo, 0.85)))
 
-    @staticmethod
-    def _espacio(unidad):
+    def _espacio(self, unidad):
         return max(2, unidad // 4)
 
     def _medir(self, filas, unidad):

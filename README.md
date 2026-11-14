@@ -76,12 +76,17 @@ ecosistema-simulado/
 │       ├── herbivoro.py
 │       └── carnivoro.py
 ├── interfaz/                  # Fase 7 (pygame)
-│   ├── ventana.py             # ventana, panel, controles y bucle
-│   ├── distribucion.py        # cómo se reparte la pantalla (adaptable)
-│   ├── sprites.py             # personajes en pixel art
+│   ├── ventana.py             # Ventana: panel, controles y bucle
+│   ├── distribucion.py        # Distribucion: reparte la pantalla (adaptable)
+│   ├── boton.py               # Boton
+│   ├── texto.py               # Texto pixelado
+│   ├── sprites.py             # Sprites: guarda los sprites escalados
+│   ├── pixel_art.py           # dibujos 16x16 y paleta (datos y funciones)
 │   ├── colores.py             # paleta rojo-negro
-│   ├── musica.py              # genera la música 8 bits con numpy
-│   └── sonido.py              # la reproduce con pygame
+│   ├── musica.py              # funciones que generan la música con numpy
+│   ├── estado_musical.py      # EstadoMusical: qué siente la música
+│   ├── compositor.py          # Compositor: entrega compás tras compás
+│   └── sonido.py              # Sonido: reproduce con pygame
 ├── herramientas/
 │   ├── probar_balance.py      # mide cuántos turnos dura el ecosistema
 │   └── demostraciones.py      # pruebas por consola de las Fases 1 y 2
@@ -102,7 +107,7 @@ ecosistema-simulado/
 - [x] Fase 2 — Mundo: colocar, mover, retirar, poblar al azar
 - [x] Fase 3 — Ciclo de turnos y comportamientos
 - [x] Fase 4 — Búsqueda de la presa más cercana y ranking por energía
-      (ordenamiento por inserción, top 3 en cada turno)
+      (algoritmo de la burbuja visto en clase, top 3 en cada turno)
 - [x] Ajuste de parámetros: grid 20 × 20 y metabolismo del carnívoro en 1
       (mediana de 38 turnos; ver `docs/decisiones_diseno.md`)
 - [x] Fase 5 — Recursividad: colonias de plantas con flood-fill
@@ -113,6 +118,7 @@ ecosistema-simulado/
 
 ## Convenciones del curso
 
+- **Una clase por archivo**, y ninguna función suelta mezclada con una clase.
 - Todo atributo de instancia es protegido: `self._atributo`.
 - Validaciones en setters con `ValueError`.
 - `Mundo` **contiene** a los organismos; no hereda de `Organismo`.
