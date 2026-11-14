@@ -23,7 +23,8 @@ python main.py --cargar                 # abre la ventana con la partida guardad
 | Botón / tecla | Acción |
 |---|---|
 | **Iniciar / Pausar** · `ESPACIO` | iniciar o pausar la simulación |
-| **+** / **−** · `+` / `-` | más o menos velocidad (0,5 a 15 turnos por segundo) |
+| **Paso** · `→` | avanzar un solo turno (para ver con calma qué pasó) |
+| **+** / **−** · `+` / `-` | más o menos velocidad (de 1 turno cada 4 s a 15 por segundo; empieza en 1 cada 2 s) |
 | **Guardar** · `G` | guardar en `guardados/partida.json` |
 | **Cargar** · `C` | cargar la partida guardada |
 | **Nueva** · `N` | partida nueva con otra semilla |

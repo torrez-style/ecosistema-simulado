@@ -6,7 +6,8 @@ mundo.ejecutar_turno() y dibuja lo que hay en la matriz.
 
 Controles (botones o teclado):
     ESPACIO  iniciar / pausar          G    guardar partida
-    + / -    más o menos velocidad     C    cargar partida
+    →        avanzar un solo turno     C    cargar partida
+    + / -    más o menos velocidad
     N        partida nueva             F11  pantalla completa
     M        encender / apagar el sonido
     ESC      salir (o dejar la pantalla completa)
@@ -33,8 +34,8 @@ NOMBRES = {"Planta": "Plantas", "Herbivoro": "Herbívoros", "Carnivoro": "Carní
 NOMBRE_SINGULAR = {"Planta": "Planta", "Herbivoro": "Herbívoro", "Carnivoro": "Carnívoro"}
 TAMANO_RANKING = 3
 TIPOS_CON_ICONO = ("especie", "ranking")
-VELOCIDADES = (0.5, 1, 2, 4, 8, 15)   # turnos por segundo
-VELOCIDAD_INICIAL = 2                 # índice en VELOCIDADES
+VELOCIDADES = (0.25, 0.5, 1, 2, 4, 8, 15)   # turnos por segundo
+VELOCIDAD_INICIAL = 1                        # índice: 0,5 -> un turno cada 2 segundos
 FPS = 60
 TAMANO_POR_DEFECTO = (1100, 720)
 PROPORCION_DE_LA_PANTALLA = 0.85      # la ventana abre al 85 % del monitor
@@ -129,6 +130,7 @@ class Ventana:
 
         self._botones = [
             Boton(lambda: "Pausar" if not self._pausado else "Iniciar", self._alternar_pausa),
+            Boton("Paso", self._paso),
             Boton("-", self._mas_lento),
             Boton("+", self._mas_rapido),
             Boton("Guardar", self._guardar),
@@ -149,6 +151,7 @@ class Ventana:
             pygame.K_F11: self._alternar_pantalla_completa,
             pygame.K_ESCAPE: self._escape,
             pygame.K_m: self._alternar_sonido,
+            pygame.K_RIGHT: self._paso,
         }
         self._sonido = Sonido(config.POBLACION_INICIAL)
         self._actualizar_estadisticas()
@@ -189,16 +192,20 @@ class Ventana:
         intervalo = 1000 / VELOCIDADES[self._indice_velocidad]
         turnos = 0
         while self._acumulado >= intervalo and turnos < MAX_TURNOS_POR_CUADRO:
-            self._mundo.ejecutar_turno()
-            self._actualizar_estadisticas()
-            self._sonido.reaccionar(self._mundo.sucesos)
+            self._ejecutar_un_turno()
             self._acumulado -= intervalo
             turnos += 1
             if self._extintas:
-                self._pausado = True
                 break
         if turnos == MAX_TURNOS_POR_CUADRO:
             self._acumulado = 0   # la computadora no da abasto: no acumular atraso
+
+    def _ejecutar_un_turno(self):
+        self._mundo.ejecutar_turno()
+        self._actualizar_estadisticas()
+        self._sonido.reaccionar(self._mundo.sucesos)
+        if self._extintas:
+            self._pausado = True
 
     def _actualizar_estadisticas(self):
         """Se calcula una vez por turno, no en cada cuadro."""
@@ -216,6 +223,14 @@ class Ventana:
             return
         self._pausado = not self._pausado
         self._sonido.efecto("pausa" if self._pausado else "reanudar")
+
+    def _paso(self):
+        """Avanza un solo turno; si la simulación estaba corriendo, la pausa."""
+        if self._extintas:
+            self._avisar("La partida terminó: N para una nueva o C para cargar")
+            return
+        self._pausado = True
+        self._ejecutar_un_turno()
 
     def _mas_rapido(self):
         self._indice_velocidad = min(self._indice_velocidad + 1, len(VELOCIDADES) - 1)
@@ -363,7 +378,12 @@ class Ventana:
         """Contenido del panel en dos bloques: información y controles."""
         estado = "EN MARCHA" if not self._pausado else "EN PAUSA"
         velocidad = VELOCIDADES[self._indice_velocidad]
-        velocidad_texto = f"{velocidad:g} turno/s" if velocidad == 1 else f"{velocidad:g} turnos/s"
+        if velocidad < 1:
+            velocidad_texto = f"1 turno cada {1 / velocidad:g} s"
+        elif velocidad == 1:
+            velocidad_texto = "1 turno por segundo"
+        else:
+            velocidad_texto = f"{velocidad:g} turnos por segundo"
         mayor = self._colonias[0] if self._colonias else 0
 
         informacion = [
@@ -387,9 +407,10 @@ class Ventana:
             ("chico", f"Velocidad: {velocidad_texto}"),
             ("chico", f"Semilla: {self._mundo.semilla}"),
             ("chico", self._texto_sonido()),
-            ("botones", self._botones[0:3]),
-            ("botones", self._botones[3:6]),
+            ("botones", self._botones[0:4]),
+            ("botones", self._botones[4:7]),
             ("ayuda", "ESPACIO pausa   +/- velocidad"),
+            ("ayuda", "Flecha derecha: un turno"),
             ("ayuda", "G guardar  C cargar  N nueva  M sonido"),
             ("ayuda", "F11 pantalla completa  ESC salir"),
         ]
@@ -518,7 +539,9 @@ class Ventana:
 
     def _dibujar_aviso_inicio(self, pantalla):
         unidad = self._unidad_del_grid()
-        self._texto_centrado(pantalla, [("ESPACIO para iniciar", unidad, colores.TEXTO)],
+        self._texto_centrado(pantalla, [("ESPACIO para iniciar", unidad, colores.TEXTO),
+                                        ("Flecha derecha: turno a turno", unidad * 3 // 4,
+                                         colores.TEXTO_TENUE)],
                              self._distribucion.grid)
 
     def _dibujar_extincion(self, pantalla):

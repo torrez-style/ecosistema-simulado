@@ -100,8 +100,13 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
     panel va al costado; si es alta, va arriba. El tamaño de letra se elige con
     una búsqueda binaria para que todo el panel quepa.
   - **Controles:** botones clicables y teclado (un diccionario tecla → acción, sin
-    cadena de `if/elif`): iniciar/pausar, velocidad de 0,5 a 15 turnos por
-    segundo, guardar, cargar, partida nueva, pantalla completa y salir.
+    cadena de `if/elif`): iniciar/pausar, avanzar un solo turno (Paso / flecha
+    derecha), velocidad de 1 turno cada 4 s a 15 turnos por segundo, guardar,
+    cargar, partida nueva, pantalla completa y salir.
+  - **Velocidad inicial: 1 turno cada 2 segundos.** Al probarlo en una computadora
+    real, 2 turnos por segundo era demasiado rápido para ver qué pasaba. El botón
+    Paso permite revisar la simulación turno por turno, como en el documento
+    *Simulación paso a paso* de los profesores.
   - **Fin de partida:** cuando una especie se extingue se muestra la pantalla de
     extinción con los turnos sobrevividos como puntaje.
   - **Lección de Maze Run:** su chequeo de `VIDEORESIZE` comparaba con el estado
