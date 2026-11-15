@@ -1,15 +1,30 @@
 # Fase 8 — Decisiones de diseño
 
-Anoten aquí cada decisión a medida que la toman; al final esto se convierte
-en el documento breve de la entrega.
+Documento breve de la entrega: las decisiones de diseño que se tomaron, los
+ajustes a los valores de referencia y la bibliografía consultada. Parte de la
+propuesta de la Fase 0 (`fase0_propuesta.md`) y la actualiza con lo que
+realmente se construyó.
+
+## Cumplimiento del checklist de la guía (sección 6)
+
+| Requisito | Dónde está |
+|---|---|
+| Clase abstracta `Organismo` con 3 subclases | `ecosistema/organismos/` (`organismo.py` usa `ABC` y `@abstractmethod`) |
+| Polimorfismo real | `actuar()` y `reproducirse()` sobrescritos en `planta.py`, `herbivoro.py`, `carnivoro.py`; `Mundo.ejecutar_turno()` no distingue especies |
+| Encapsulamiento | atributos `self._x`; `energia`, `edad` y `vivo` de solo lectura; `fila`/`columna` con setter que valida |
+| Matriz y búsqueda/ordenamiento | `Mundo._grid`; `presa_mas_cercana()` y `ranking_por_energia()` en `busqueda.py` |
+| Persistencia | `persistencia.py` (JSON) y `Mundo.a_diccionario()` / `desde_diccionario()` |
+| Recursividad | `tamano_colonia()` en `recursividad.py` (flood-fill) |
+| Interfaz gráfica | `interfaz/ventana.py` (pygame) |
 
 ## Reglas del mundo
 
 - **Vecindad:** 8 celdas (con diagonales), bordes duros.
 - **Redondeo:** divisiones y porcentajes redondean hacia arriba (`math.ceil`),
   según la nota de la tabla de parámetros. Ej.: un herbívoro con 17 de energía
-  que se reproduce paga 9 y queda con 8. _Confirmar con los profes: el ejemplo
-  paso a paso usa decimales (8.5, 11.5)._
+  que se reproduce paga 9 y queda con 8. El documento "simulación paso a paso"
+  muestra decimales (8.5, 11.5) en su ejemplo; se siguió la nota de la guía
+  (redondeo hacia arriba), por eso hay esa diferencia de 0,5.
 - **Orden del turno:** cada especie tiene un atributo de clase `ORDEN_EN_TURNO`
   (Planta 1, Herbívoro 2, Carnívoro 3). `Mundo` ordena la lista congelada con
   `sorted()` por ese atributo; como `sorted()` es estable, dentro de cada especie
@@ -185,15 +200,23 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
     (triangular, cuadrada y ruido), no de melodías con derechos de autor.
   - Si la computadora no tiene sonido, el juego sigue funcionando en silencio.
 
-## Pendiente de confirmar con los profes
+## Decisiones propias que la guía no define
 
-- Tamaño del grupo.
-- Redondeo hacia arriba vs. decimales del ejemplo.
-- Si numpy se permite para el grid.
-- Si terminar la partida por extinción es aceptable.
+- **Fin de la partida por extinción:** la guía no lo prohíbe; se eligió porque
+  ningún ajuste de números logra un equilibrio permanente (ver el hallazgo
+  arriba). El puntaje son los turnos sobrevividos.
+- **Bibliotecas externas:** `pygame` (interfaz, FAQ P23) y `numpy` (azar con
+  semilla, audio y sprites) se investigaron por cuenta propia; no se vieron en
+  clase. `numpy` nunca decide el comportamiento de la simulación.
+- **Formato de guardado:** JSON, recomendado por el FAQ (P20).
+
+## Pendiente de confirmar
+
+- Integrantes del grupo (nombres) para la entrega.
 
 ## Bibliografía
 
+- Guía del proyecto *Ecosistema Simulado* y su FAQ (MO-0002 Programación I, II Ciclo 2026).
 - Marzal Varó, A., García Sevilla, P. & Gracia Luengo, I. (2016). *Introducción a la programación con Python 3*. Universitat Jaume I.
 - Documentación oficial de Python: módulos `abc`, `json`, `random`.
 - Documentación de pygame y numpy.

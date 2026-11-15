@@ -113,7 +113,7 @@ ecosistema-simulado/
 - [x] Fase 5 — Recursividad: colonias de plantas con flood-fill
 - [x] Fase 6 — Guardar / cargar en JSON (la partida continúa exactamente igual)
 - [x] Fase 7 — Interfaz gráfica con pygame (ventana adaptable y pixel art)
-- [ ] Fase 8 — Documento de decisiones y defensa oral
+- [x] Fase 8 — Documento de decisiones (`docs/decisiones_diseno.md`); queda la defensa oral
 - [x] Extra: música 8 bits tenue y reactiva al ecosistema, con efectos de sonido
 
 ## Convenciones del curso
