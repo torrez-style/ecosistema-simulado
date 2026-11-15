@@ -193,7 +193,11 @@ class Ventana:
     def _cargar(self):
         try:
             self._mundo = persistencia.cargar()
-        except (FileNotFoundError, ValueError) as error:
+        except FileNotFoundError:
+            self._avisar("Todavía no hay partida guardada: usa Guardar primero")
+            self._sonido.efecto("error")
+            return
+        except ValueError as error:
             self._avisar(f"No se pudo cargar: {error}")
             self._sonido.efecto("error")
             return
@@ -361,8 +365,10 @@ class Ventana:
             ("ayuda", "G guardar  C cargar  N nueva  M sonido"),
             ("ayuda", "F11 pantalla completa  ESC salir"),
         ]
-        if pygame.time.get_ticks() < self._mensaje_hasta:
-            controles.append(("mensaje", self._mensaje))
+        # La fila del mensaje siempre existe (vacía si no hay aviso), para que el
+        # tamaño de la letra del panel no cambie cuando aparece o desaparece.
+        hay_aviso = pygame.time.get_ticks() < self._mensaje_hasta
+        controles.append(("mensaje", self._mensaje if hay_aviso else ""))
         return informacion, controles
 
     @staticmethod
@@ -386,6 +392,9 @@ class Ventana:
                 anchos = [self._texto.medir(b.etiqueta, tamano)[0] + 2 * relleno for b in fila[1]]
                 ancho = sum(anchos) + self._espacio(unidad) * (len(anchos) - 1)
                 alto = self._texto.medir("Ag", tamano)[1] + relleno
+            elif tipo == "mensaje":
+                # Su ancho no cuenta: si es largo se recorta al dibujarlo.
+                ancho, alto = 0, self._texto.medir("Ag", tamano)[1]
             else:
                 ancho, alto = self._texto.medir(fila[-1], tamano)
                 if tipo in TIPOS_CON_ICONO:
@@ -463,6 +472,11 @@ class Ventana:
                 pantalla.blit(self._sprites.obtener(especie, "adulto", lado), (x, y))
                 pantalla.blit(superficie, (x + lado + espacio, y))
                 y += lado
+            elif tipo == "mensaje":
+                texto = self._recortar(fila[1], tamano, ancho_columna)
+                if texto:
+                    pantalla.blit(self._texto.render(texto, tamano, colores.AMARILLO), (x, y))
+                y += self._texto.medir("Ag", tamano)[1]
             else:
                 superficie = self._texto.render(fila[1], tamano,
                                                 color_por_tipo.get(tipo, colores.TEXTO))
@@ -470,6 +484,14 @@ class Ventana:
                 y += superficie.get_height()
             y += espacio
         return y
+
+    def _recortar(self, texto, tamano, ancho_maximo):
+        """Acorta el texto con "..." hasta que quepa en el ancho dado."""
+        if self._texto.medir(texto, tamano)[0] <= ancho_maximo:
+            return texto
+        while texto and self._texto.medir(texto + "...", tamano)[0] > ancho_maximo:
+            texto = texto[:-1]
+        return texto + "..." if texto else ""
 
     def _unidad_del_grid(self):
         return max(14, self._distribucion.grid.w // 22)
