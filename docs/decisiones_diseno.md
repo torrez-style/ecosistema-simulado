@@ -1,21 +1,82 @@
-# Fase 8 — Decisiones de diseño
+# Panta Rhei — Ecosistema simulado
 
-Documento breve de la entrega: las decisiones de diseño que se tomaron, los
-ajustes a los valores de referencia y la bibliografía consultada. Parte de la
-propuesta de la Fase 0 (`fase0_propuesta.md`) y la actualiza con lo que
-realmente se construyó.
+**Documento de entrega (Fase 8): decisiones de diseño y bibliografía**
+
+- **Curso:** MO-0002 Programación I, II Ciclo 2026 — Universidad de Costa Rica, Sede de Occidente
+- **Docentes:** Prof. Manfred Mejías Acevedo y Prof. James McIntosh Molina
+- **Integrantes:** _(nombres y carnés)_
+- **Fecha de entrega:** 24 de noviembre de 2026
+- **Repositorio:** https://github.com/torrez-style/ecosistema-simulado
+
+## Introducción
+
+Este proyecto simula un ecosistema sobre una cuadrícula de 20 × 20 celdas que
+representa el bosque tropical seco de Guanacaste. Viven en él tres especies:
+plantas (arbustos y corteza amarilla), guatusas (herbívoros) y tigrillos
+(carnívoros). El tiempo avanza en turnos y, en cada uno, todo organismo vivo
+actúa según su especie: las plantas hacen fotosíntesis, las guatusas buscan
+plantas y los tigrillos buscan guatusas. Además, todos gastan energía, envejecen,
+se reproducen y mueren según las reglas de la sección 4 de la guía.
+
+Nadie controla a los animales: el programa no es un juego, sino una simulación
+para **observar** cómo el ecosistema prolifera o perece. La interfaz gráfica
+(pygame) muestra el grid con personajes en pixel art, la población de cada
+especie, las colonias de plantas y el ranking por energía, y permite iniciar,
+pausar, avanzar turno por turno, cambiar la velocidad, guardar y cargar.
+
+El código integra los temas centrales del curso: una clase abstracta
+`Organismo` con tres subclases y polimorfismo real en `actuar()`,
+encapsulamiento con propiedades, una matriz de objetos, búsqueda secuencial y el
+algoritmo de la burbuja, persistencia en archivo y una función recursiva.
+
+Este documento parte de la propuesta de la Fase 0 (`fase0_propuesta.md`) y la
+actualiza con lo que realmente se construyó. Resume primero cómo se cumple cada
+requisito obligatorio de la guía y las decisiones que tomamos donde la guía deja
+libertad. Luego detalla las reglas implementadas, la relación con el material
+del curso, el ajuste de parámetros, el diseño del código y la bibliografía
+consultada.
+
+**Cómo correrlo:** `pip install -r requirements.txt` y luego `python main.py`.
+Las pruebas automáticas se corren con `python -m unittest discover -s pruebas -t .`.
 
 ## Cumplimiento del checklist de la guía (sección 6)
 
-| Requisito | Dónde está |
-|---|---|
-| Clase abstracta `Organismo` con 3 subclases | `ecosistema/organismos/` (`organismo.py` usa `ABC` y `@abstractmethod`) |
-| Polimorfismo real | `actuar()` y `reproducirse()` sobrescritos en `planta.py`, `herbivoro.py`, `carnivoro.py`; `Mundo.ejecutar_turno()` no distingue especies |
-| Encapsulamiento | atributos `self._x`; `energia`, `edad` y `vivo` de solo lectura; `fila`/`columna` con setter que valida |
-| Matriz y búsqueda/ordenamiento | `Mundo._grid`; `presa_mas_cercana()` y `ranking_por_energia()` en `busqueda.py` |
-| Persistencia | `persistencia.py` (JSON) y `Mundo.a_diccionario()` / `desde_diccionario()` |
-| Recursividad | `tamano_colonia()` en `recursividad.py` (flood-fill) |
-| Interfaz gráfica | `interfaz/ventana.py` (pygame) |
+| Requisito obligatorio | Dónde está en el código | Cómo comprobarlo |
+|---|---|---|
+| Una clase abstracta (`Organismo`) con tres subclases concretas que la extienden | `ecosistema/organismos/organismo.py`: `Organismo(ABC)` con `@abstractmethod` en `actuar()` y `reproducirse()`. Subclases en `planta.py`, `herbivoro.py` y `carnivoro.py` | `Organismo(0, 0)` lanza `TypeError` (prueba `test_organismo_es_abstracto`); `python -m herramientas.demostraciones` |
+| Polimorfismo real: el mismo método se comporta distinto según la subclase | Cada subclase sobrescribe `actuar()` y `reproducirse()`: fotosíntesis, comer plantas o comer herbívoros. `Mundo.ejecutar_turno()` solo llama a `organismo.actuar(self)`, sin ningún `if/elif` por especie; el orden del turno sale de ordenar por el atributo de clase `ORDEN_EN_TURNO` | Pruebas `test_herbivoro_come_planta_y_ocupa_su_celda` y `test_prefiere_presa_de_lado_a_diagonal`; bitácora del turno con `python main.py --consola` |
+| Encapsulamiento: energía y edad no se modifican libremente desde afuera | Atributos protegidos (`self._energia`, `self._edad`, `self._vivo`) con `@property` de solo lectura; solo cambian con `ganar_energia()`, `perder_energia()`, `envejecer()` y `morir()`. `fila` y `columna` tienen setter que lanza `ValueError`. `Mundo.organismos` devuelve una copia de la lista | Pruebas `test_energia_no_pasa_del_maximo`, `test_muere_al_llegar_a_cero` y `test_edad_negativa` |
+| Una matriz o grid que representa el mundo, con al menos una búsqueda u ordenamiento aplicado con sentido | Matriz `Mundo._grid` (lista de listas de 20 × 20) con bordes y colisiones controlados en `colocar()`, `mover()` y `retirar()`. Búsqueda: `presa_mas_cercana()` (búsqueda secuencial del mínimo), usada dentro de `actuar()` para decidir a quién comer. Ordenamiento: `ranking_por_energia()` (burbuja), cuyo top 3 se muestra en cada turno | Pruebas `test_no_se_coloca_en_celda_ocupada`, `test_no_se_coloca_fuera_del_grid` y las 5 de `PruebasRanking` |
+| Persistencia: guardar y cargar el estado completo en un archivo | `ecosistema/persistencia.py` guarda en JSON el grid, el turno, la semilla, el estado del azar y cada organismo (`a_diccionario()`), y lo reconstruye con `Mundo.desde_diccionario()`. Botones **Guardar** y **Cargar** (teclas `G` y `C`) | Prueba `test_la_partida_continua_exactamente_igual`: 10 turnos seguidos dan el mismo resultado que guardar, cargar y seguir |
+| Una función recursiva que resuelve algo real | `ecosistema/recursividad.py`: `tamano_colonia()` cuenta las plantas conectadas (flood-fill), con dos casos base. Se usa en cada turno para mostrar cuántas colonias hay y la más grande | Las 6 pruebas de `PruebasRecursividad`, incluido un grid lleno de 400 plantas sin recursión infinita |
+| Interfaz gráfica funcional que visualiza la simulación | `interfaz/ventana.py` (pygame): un ícono en pixel art por especie y controles para iniciar/pausar, avanzar un turno, cambiar la velocidad, guardar, cargar y empezar una partida nueva. La ventana se adapta a cualquier tamaño de pantalla | `python main.py`; pruebas de `test_interfaz.py` (el grid cabe sin tapar el panel en 8 tamaños de pantalla) |
+
+Los otros dos criterios de la rúbrica: la **propuesta corta** está en
+`docs/fase0_propuesta.md` y `docs/diagrama_clases.md`, con el diagrama
+actualizado al código final, y la **defensa oral** se hace en la fecha de
+presentación.
+
+## Decisiones propias que la guía no define
+
+Donde la guía o el FAQ dejan la decisión al equipo, o no dicen nada, esto es lo
+que elegimos.
+
+| Tema | Qué dice la guía o el FAQ | Qué decidimos | Por qué |
+|---|---|---|---|
+| Cómo aplicar el redondeo | Redondear hacia arriba en divisiones y multiplicaciones (nota de la tabla). El documento *Simulación paso a paso* usa decimales (8,5) | `math.ceil` en el umbral (14 / 17 / 21), la energía al nacer (10 / 12 / 15) y el costo de reproducción: se pierde la mitad redondeada hacia arriba (17 → pierde 9 → queda 8) | Se siguió la nota de la guía, así toda la energía es entera; por eso hay una diferencia de 0,5 con el ejemplo |
+| Qué presa elegir si hay varias | "Por ejemplo, la más cercana" | La más cercana por distancia euclidiana: las de lado (distancia 1) antes que las diagonales (distancia 2). En empate, la primera en el orden de `Mundo.DIRECCIONES` (empezando arriba a la izquierda) | Es un criterio fijo y explicable, y convierte la búsqueda en algo con sentido dentro de `actuar()` |
+| Orden dentro de una misma especie | Por defecto, el orden de la lista del mundo; se puede barajar si se documenta (FAQ P19) | **No barajamos**: se respeta el orden de la lista. `sorted()` por `ORDEN_EN_TURNO` es estable y no altera ese orden | Hace la simulación reproducible con la misma semilla y más fácil de seguir turno por turno |
+| Cuándo envejece un organismo | Muere si "al final de su turno" su edad supera la máxima | En el paso 4 todos los que estaban vivos al inicio del turno suman 1 a su edad y mueren si `edad > edad máxima`. Las crías nacen con edad 0 en el paso 5 y no envejecen ese turno | Respeta que la cría no participa en el turno en que nace (sección 4.4) |
+| Cuándo termina la simulación | No lo define | Cuando una especie se extingue: aparece la pantalla de extinción y el puntaje son los turnos que sobrevivió el ecosistema | La guía no lo prohíbe, y con estas reglas ningún ajuste logra un equilibrio permanente (ver *Ajuste de parámetros*) |
+| Tamaño del grid y parámetros | 10 × 10 sugerido y ajustable; los números se pueden ajustar si se documentan | Grid de 20 × 20 y metabolismo del carnívoro en 1; todo lo demás igual a la tabla | Es el menor cambio que logra que el ecosistema dure varias decenas de turnos (ver *Ajuste de parámetros*) |
+| Bibliotecas externas | Tkinter o Pygame para la interfaz (FAQ P23); no menciona numpy | `pygame` (interfaz) y `numpy` (azar con semilla, audio y sprites), investigadas por cuenta propia: no se vieron en clase. `numpy` nunca decide el comportamiento de la simulación | Pygame da más control visual; numpy permite azar reproducible y generar la música |
+| Azar | No lo define | Generador de numpy con semilla. La semilla se muestra en el panel para poder repetir una partida (`python main.py --semilla 42`). La música usa un generador aparte | Reproducibilidad para la defensa; encender o apagar el sonido no cambia la simulación |
+| Qué se guarda en el archivo | Formato libre, se recomienda JSON (FAQ P20); "continuar exactamente donde quedó" | JSON con grid, turno, semilla, **estado del generador de azar**, el orden de la lista y, por organismo, especie, posición, energía, edad y estado. Si el archivo falta o está dañado, se avisa con un error claro | Sin el estado del azar y el orden, la partida cargada se movería distinto a la original |
+| Qué cuenta como colonia de plantas | La guía sugiere el flood-fill como idea, sin detalles | Dos plantas son de la misma colonia si son vecinas en cualquiera de las 8 direcciones, igual que la vecindad del resto del proyecto | Consistencia con la regla de las 8 vecinas (FAQ P8) |
+| Búsqueda u ordenamiento | Basta con uno (Fase 4 y FAQ P11) | Usamos los dos: la búsqueda de presa y el ranking por energía con la burbuja | La búsqueda decide el comportamiento; el ranking ayuda a observar el ecosistema |
+| Biblioteca gráfica y controles | Tkinter o Pygame; controles mínimos de iniciar, pausar y velocidad | Pygame. Además: botón **Paso** (un turno a la vez), guardar, cargar, partida nueva, sonido, pantalla completa y ventana adaptable. Empieza en 1 turno cada 2 segundos | Al probarlo, la velocidad original era demasiado rápida para ver qué pasaba |
+| Representación de las especies | Un color o ícono distinto por especie | Personajes en pixel art propios: brote, arbusto y corteza amarilla en flor (cuando la planta ya puede reproducirse), guatusa y tigrillo; las crías se ven más pequeñas | Permite ver de un vistazo quién está por reproducirse y quién acaba de nacer |
+| Sonido | No lo pide | Música 8 bits tenue generada con numpy que cambia según la población, y efectos suaves al nacer, comer y morir | Extra opcional; ayuda a "escuchar" cuándo el ecosistema entra en tensión |
 
 ## Reglas del mundo
 
@@ -108,8 +169,6 @@ permanente. Incluso cambiando 9 valores de la tabla, el promedio no pasa de unos
 Lotka-Volterra y, en un grid finito, la especie que está en su mínimo termina
 extinguiéndose. Por eso el juego termina con la extinción y el puntaje son los
 turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
-- **Fin de partida:** cuando una especie llega a 0 (pantalla de extinción);
-  puntaje = turnos sobrevividos. _Validar con los profes._
 
 ## Diseño del código
 
@@ -164,7 +223,7 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
     chequeo, sin código muerto.
 - **Gráficos:** todos los personajes se dibujan con píxeles (pixel art), sin
   imágenes externas. Cada sprite es una lista de textos de 16 × 16 donde cada
-  letra es un color de la paleta (`interfaz/sprites.py`), y se escala con vecino
+  letra es un color de la paleta (`interfaz/pixel_art.py`), y se escala con vecino
   más cercano para que los píxeles queden nítidos. Las plantas tienen tres etapas:
   brote (recién nacida), arbusto y corteza amarilla en flor (cuando ya puede
   reproducirse). Las crías de los animales se dibujan más pequeñas. El texto se
@@ -178,7 +237,7 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
 - Bosque tropical seco de Guanacaste en época seca.
 - Planta = arbustos / corteza amarilla en flor; Herbívoro = guatusa; Carnívoro = tigrillo.
 - Nadie controla a los animales: el que sobrevive es el ecosistema.
-- Paleta rojo-negro en bandas (ver `interfaz/ventana.py`); los organismos no usan rojo.
+- Paleta rojo-negro en bandas (ver `interfaz/colores.py`); los organismos no usan rojo.
 - Pixel art: sprites como matrices 8×8 o 16×16 de índices de paleta.
 - **Música 8 bits propia, generada con numpy** (capa opcional, no da puntos).
   Es tenue, como un paisaje sonoro del bosque, y reacciona a lo que pasa:
@@ -200,23 +259,15 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
     (triangular, cuadrada y ruido), no de melodías con derechos de autor.
   - Si la computadora no tiene sonido, el juego sigue funcionando en silencio.
 
-## Decisiones propias que la guía no define
-
-- **Fin de la partida por extinción:** la guía no lo prohíbe; se eligió porque
-  ningún ajuste de números logra un equilibrio permanente (ver el hallazgo
-  arriba). El puntaje son los turnos sobrevividos.
-- **Bibliotecas externas:** `pygame` (interfaz, FAQ P23) y `numpy` (azar con
-  semilla, audio y sprites) se investigaron por cuenta propia; no se vieron en
-  clase. `numpy` nunca decide el comportamiento de la simulación.
-- **Formato de guardado:** JSON, recomendado por el FAQ (P20).
-
 ## Pendiente de confirmar
 
 - Integrantes del grupo (nombres) para la entrega.
 
 ## Bibliografía
 
-- Guía del proyecto *Ecosistema Simulado* y su FAQ (MO-0002 Programación I, II Ciclo 2026).
+- Mejías Acevedo, M., & McIntosh Molina, J. (2026). *Proyecto final: Ecosistema simulado* [Guía del proyecto]. Programación I (MO-0002), Universidad de Costa Rica, Sede de Occidente.
+- Mejías Acevedo, M., & McIntosh Molina, J. (2026). *Preguntas frecuentes: Proyecto final — Ecosistema simulado* [Complemento de la guía]. Programación I (MO-0002), Universidad de Costa Rica, Sede de Occidente.
+- Mejías Acevedo, M., & McIntosh Molina, J. (2026). *Simulación paso a paso* [Material del curso]. Programación I (MO-0002), Universidad de Costa Rica, Sede de Occidente.
 - Marzal Varó, A., García Sevilla, P. & Gracia Luengo, I. (2016). *Introducción a la programación con Python 3*. Universitat Jaume I.
 - Documentación oficial de Python: módulos `abc`, `json`, `random`.
 - Documentación de pygame y numpy.
