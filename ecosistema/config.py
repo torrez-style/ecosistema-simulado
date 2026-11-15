@@ -19,10 +19,6 @@ POBLACION_INICIAL = {
     "Carnivoro": 3,
 }
 
-# Semilla para random: None = corrida distinta cada vez; un número (ej. 42)
-# hace que la corrida sea reproducible.
-SEMILLA = None
-
 # --- Reproducción (sección 4.4) --------------------------------------------
 PORCENTAJE_UMBRAL_REPRODUCCION = 70   # % de la energía máxima
 PORCENTAJE_ENERGIA_AL_NACER = 50      # % de la energía máxima
