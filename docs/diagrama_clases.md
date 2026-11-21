@@ -77,19 +77,21 @@ classDiagram
         #_semilla: int
         #_azar: Generator
         #_bitacora: list~str~
+        #_sucesos: dict
         +filas: int
         +columnas: int
         +turno: int
         +semilla: int
         +organismos: list~Organismo~
         +bitacora: list~str~
+        +sucesos: dict
         +esta_dentro(fila, columna) bool
         +celda(fila, columna) Organismo
         +vecinas(fila, columna) list
         +vecinas_libres(fila, columna) list
         +celdas_libres() list
         +elegir(opciones)
-        +registrar(texto)
+        +registrar(texto, suceso, especie)
         +poblacion() dict
         +colocar(organismo)
         +poblar_aleatorio(poblacion_inicial)
