@@ -3,10 +3,9 @@
 **Documento de entrega (Fase 8): decisiones de diseño y bibliografía**
 
 - **Curso:** MO-0002 Programación I, II Ciclo 2026 — Universidad de Costa Rica, Sede de Occidente
-- **Docentes:** Prof. Manfred Mejías Acevedo y Prof. James McIntosh Molina
+- **Docente:** Prof. James McIntosh Molina (grupo 01)
 - **Integrantes:** Fatima Lizbeth Rios Obando (C4I927) y Manyel Lizandro Torrez (C4L962)
 - **Fecha de entrega:** 24 de noviembre de 2026
-- **Repositorio:** https://github.com/torrez-style/ecosistema-simulado
 
 ## Introducción
 
@@ -229,7 +228,7 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
   reproducirse). Las crías de los animales se dibujan más pequeñas. El texto se
   dibuja sin suavizado para que combine con el estilo 8 bits.
 
-## Estética — *Panta Rhei* (nombre provisional)
+## Estética — *Panta Rhei*
 
 > «Nadie se baña dos veces en el mismo río» — Heráclito.
 > Con semilla fija y persistencia, sí te bañas dos veces en el mismo río.
