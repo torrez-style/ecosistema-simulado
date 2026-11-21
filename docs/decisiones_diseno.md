@@ -4,7 +4,7 @@
 
 - **Curso:** MO-0002 Programación I, II Ciclo 2026 — Universidad de Costa Rica, Sede de Occidente
 - **Docentes:** Prof. Manfred Mejías Acevedo y Prof. James McIntosh Molina
-- **Integrantes:** _(nombres y carnés)_
+- **Integrantes:** Fatima Lizbeth Rios Obando (C4I927) y Manyel Lizandro Torrez (C4L962)
 - **Fecha de entrega:** 24 de noviembre de 2026
 - **Repositorio:** https://github.com/torrez-style/ecosistema-simulado
 
@@ -258,10 +258,6 @@ turnos sobrevividos: *panta rhei*, todo fluye, y nada dura para siempre.
   - No se copió ninguna canción: el "sonido a consola" viene de las ondas
     (triangular, cuadrada y ruido), no de melodías con derechos de autor.
   - Si la computadora no tiene sonido, el juego sigue funcionando en silencio.
-
-## Pendiente de confirmar
-
-- Integrantes del grupo (nombres) para la entrega.
 
 ## Bibliografía
 
