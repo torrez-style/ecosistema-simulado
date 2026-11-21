@@ -32,7 +32,7 @@ def mostrar_poblacion(mundo):
     if tamanos:
         print(f"Colonias de plantas: {len(tamanos)} | la más grande: {tamanos[0]} plantas")
 
-    # Fase 4: ranking por energía (ordenamiento por inserción)
+    # Fase 4: ranking por energía (algoritmo de la burbuja)
     top = ranking_por_energia(mundo.organismos, 3)
     print("Más energía -> " + " | ".join(
         f"{puesto}. {o.nombre} {o.posicion}: {o.energia}" for puesto, o in enumerate(top, start=1)))
